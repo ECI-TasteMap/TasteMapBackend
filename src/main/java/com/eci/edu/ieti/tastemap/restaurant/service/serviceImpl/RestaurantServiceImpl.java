@@ -9,7 +9,10 @@ import com.eci.edu.ieti.tastemap.restaurant.service.RestaurantService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the RestaurantService interface.
@@ -28,6 +31,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public Restaurant create(RestaurantRequestDto restaurantRequestDto) {
         Restaurant restaurant = restaurantMapper.toRestaurant(restaurantRequestDto);
+        restaurant.setLocations(normalizeLocations(restaurantRequestDto.getLocations()));
         return restaurantRepository.save(restaurant);
     }
 
@@ -58,9 +62,23 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setLogo(restaurantRequestDto.getLogo());
         restaurant.setMenu(restaurantRequestDto.getMenu());
         restaurant.setTheme(restaurantRequestDto.getTheme());
-        restaurant.setIdComment(restaurantRequestDto.getIdComment());
+        restaurant.setLocations(normalizeLocations(restaurantRequestDto.getLocations()));
+        restaurant.setTags(restaurantRequestDto.getTags());
+        restaurant.setPriceMin(restaurantRequestDto.getPriceMin());
+        restaurant.setPriceMax(restaurantRequestDto.getPriceMax());
         restaurant.setHour(restaurantRequestDto.getHour());
         return restaurantRepository.save(restaurant);
+    }
+
+    private Set<String> normalizeLocations(Set<String> locations) {
+        if (locations == null) {
+            return null;
+        }
+
+        return locations.stream()
+                .filter(location -> location != null && !location.trim().isEmpty())
+                .map(String::trim)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }
 

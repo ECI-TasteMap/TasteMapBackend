@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 /**
  * Data Transfer Object for restaurant data in responses.
  */
@@ -18,7 +20,10 @@ public class RestaurantResponseDto {
     private String logo;
     private String menu;
     private String theme;
-    private String idComment;
+    private Set<String> locations;
+    private Set<String> tags;
+    private Integer priceMin;
+    private Integer priceMax;
     private String hour;
 }
 
