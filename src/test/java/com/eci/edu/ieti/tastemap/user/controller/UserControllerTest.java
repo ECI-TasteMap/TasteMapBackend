@@ -2,9 +2,12 @@ package com.eci.edu.ieti.tastemap.user.controller;
 
 import com.eci.edu.ieti.tastemap.user.dto.UserRequestDto;
 import com.eci.edu.ieti.tastemap.user.dto.UserResponseDto;
+import com.eci.edu.ieti.tastemap.user.dto.ChatRequestDto;
+import com.eci.edu.ieti.tastemap.user.dto.ChatResponseDto;
 import com.eci.edu.ieti.tastemap.user.mapper.UserMapper;
 import com.eci.edu.ieti.tastemap.user.model.Role;
 import com.eci.edu.ieti.tastemap.user.model.User;
+import com.eci.edu.ieti.tastemap.user.service.ChatService;
 import com.eci.edu.ieti.tastemap.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,18 +34,25 @@ class UserControllerTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private ChatService chatService;
+
     @InjectMocks
     private UserController userController;
 
     private User user;
     private UserRequestDto userRequestDto;
     private UserResponseDto userResponseDto;
+    private ChatRequestDto chatRequestDto;
+    private ChatResponseDto chatResponseDto;
 
     @BeforeEach
     void setUp() {
         user = new User("1", "Test User", "password", "test@test.com", Role.USER);
         userRequestDto = new UserRequestDto("Test User", "password", "test@test.com", Role.USER);
         userResponseDto = new UserResponseDto("1", "Test User", "test@test.com", Role.USER);
+        chatRequestDto = new ChatRequestDto("Hola", List.of());
+        chatResponseDto = ChatResponseDto.builder().success(true).response("Respuesta").userId("1").build();
     }
 
     @Test
@@ -102,6 +112,17 @@ class UserControllerTest {
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(userService, times(1)).deleteById("1");
+    }
+
+    @Test
+    void testSendMessage() {
+        when(chatService.sendMessage("1", chatRequestDto)).thenReturn(chatResponseDto);
+
+        ResponseEntity<ChatResponseDto> response = userController.sendMessage("1", chatRequestDto);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(chatResponseDto, response.getBody());
+        verify(chatService, times(1)).sendMessage("1", chatRequestDto);
     }
 }
 

@@ -1,4 +1,4 @@
-package com.eci.edu.ieti.tastemap.config;
+package com.eci.edu.ieti.tastemap.user.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

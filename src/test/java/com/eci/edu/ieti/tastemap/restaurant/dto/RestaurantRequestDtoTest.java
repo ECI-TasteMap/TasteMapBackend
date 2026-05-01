@@ -2,6 +2,8 @@ package com.eci.edu.ieti.tastemap.restaurant.dto;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RestaurantRequestDtoTest {
@@ -15,7 +17,10 @@ class RestaurantRequestDtoTest {
         dto.setLogo("logo.png");
         dto.setMenu("menu.pdf");
         dto.setTheme("Theme");
-        dto.setIdComment("comment1");
+        dto.setLocations(Set.of("North", "Downtown"));
+        dto.setTags(Set.of("Italian", "Family"));
+        dto.setPriceMin(10);
+        dto.setPriceMax(30);
         dto.setHour("9-5");
 
         assertEquals("owner1", dto.getOwnerId());
@@ -24,7 +29,10 @@ class RestaurantRequestDtoTest {
         assertEquals("logo.png", dto.getLogo());
         assertEquals("menu.pdf", dto.getMenu());
         assertEquals("Theme", dto.getTheme());
-        assertEquals("comment1", dto.getIdComment());
+        assertEquals(Set.of("North", "Downtown"), dto.getLocations());
+        assertEquals(Set.of("Italian", "Family"), dto.getTags());
+        assertEquals(10, dto.getPriceMin());
+        assertEquals(30, dto.getPriceMax());
         assertEquals("9-5", dto.getHour());
     }
 }

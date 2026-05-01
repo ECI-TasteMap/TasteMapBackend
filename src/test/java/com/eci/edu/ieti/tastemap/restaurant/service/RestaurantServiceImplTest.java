@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -37,8 +38,8 @@ class RestaurantServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        restaurant = new Restaurant("1", "owner1", "Test Restaurant", "Description", "logo.png", "menu.pdf", "Theme", "comment1", "9-5");
-        restaurantRequestDto = new RestaurantRequestDto("owner1", "Test Restaurant", "Description", "logo.png", "menu.pdf", "Theme", "comment1", "9-5");
+        restaurant = new Restaurant("1", "owner1", "Test Restaurant", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North", "Downtown"), Set.of("Italian", "Family"), 10, 30, "9-5");
+        restaurantRequestDto = new RestaurantRequestDto("owner1", "Test Restaurant", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North", "Downtown"), Set.of("Italian", "Family"), 10, 30, "9-5");
     }
 
     @Test

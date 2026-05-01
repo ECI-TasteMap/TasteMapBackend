@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Set;
+
 /**
  * Represents a restaurant in the TasteMap application.
  */
@@ -23,7 +25,10 @@ public class Restaurant {
     private String logo;
     private String menu;
     private String theme;
-    private String idComment;
+    private Set<String> locations;
+    private Set<String> tags;
+    private Integer priceMin;
+    private Integer priceMax;
     private String hour;
 }
 

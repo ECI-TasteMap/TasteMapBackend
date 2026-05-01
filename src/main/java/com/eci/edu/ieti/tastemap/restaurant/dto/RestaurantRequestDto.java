@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 /**
  * Data Transfer Object for restaurant creation and update requests.
  */
@@ -17,7 +19,10 @@ public class RestaurantRequestDto {
     private String logo;
     private String menu;
     private String theme;
-    private String idComment;
+    private Set<String> locations;
+    private Set<String> tags;
+    private Integer priceMin;
+    private Integer priceMax;
     private String hour;
 }
 

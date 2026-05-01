@@ -2,6 +2,8 @@ package com.eci.edu.ieti.tastemap.restaurant.model;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RestaurantTest {
@@ -16,7 +18,10 @@ class RestaurantTest {
         restaurant.setLogo("logo.png");
         restaurant.setMenu("menu.pdf");
         restaurant.setTheme("Theme");
-        restaurant.setIdComment("comment1");
+        restaurant.setLocations(Set.of("North", "Downtown"));
+        restaurant.setTags(Set.of("Italian", "Family"));
+        restaurant.setPriceMin(10);
+        restaurant.setPriceMax(30);
         restaurant.setHour("9-5");
 
         assertEquals("1", restaurant.getId());
@@ -26,7 +31,10 @@ class RestaurantTest {
         assertEquals("logo.png", restaurant.getLogo());
         assertEquals("menu.pdf", restaurant.getMenu());
         assertEquals("Theme", restaurant.getTheme());
-        assertEquals("comment1", restaurant.getIdComment());
+        assertEquals(Set.of("North", "Downtown"), restaurant.getLocations());
+        assertEquals(Set.of("Italian", "Family"), restaurant.getTags());
+        assertEquals(10, restaurant.getPriceMin());
+        assertEquals(30, restaurant.getPriceMax());
         assertEquals("9-5", restaurant.getHour());
     }
 }

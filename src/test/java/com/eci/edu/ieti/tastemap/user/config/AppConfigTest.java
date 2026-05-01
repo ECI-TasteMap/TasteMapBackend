@@ -1,6 +1,5 @@
 package com.eci.edu.ieti.tastemap.user.config;
 
-import com.eci.edu.ieti.tastemap.config.AppConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
