@@ -2,6 +2,7 @@ package com.eci.edu.ieti.tastemap.reviews.controller;
 
 import com.eci.edu.ieti.tastemap.reviews.dto.ReviewRequestDto;
 import com.eci.edu.ieti.tastemap.reviews.dto.ReviewResponseDto;
+import com.eci.edu.ieti.tastemap.reviews.dto.ReviewAverageResponseDto;
 import com.eci.edu.ieti.tastemap.reviews.exception.ReviewNotFoundException;
 import com.eci.edu.ieti.tastemap.reviews.mapper.ReviewMapper;
 import com.eci.edu.ieti.tastemap.reviews.model.Review;
@@ -49,6 +50,12 @@ public class ReviewController {
                 .map(reviewMapper::toReviewResponseDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(reviewResponseDtos);
+    }
+
+    @GetMapping("/restaurant/{restaurantId}/average")
+    public ResponseEntity<ReviewAverageResponseDto> averageByRestaurantId(@PathVariable String restaurantId) {
+        double average = reviewService.averageByRestaurantId(restaurantId);
+        return ResponseEntity.ok(new ReviewAverageResponseDto(restaurantId, average));
     }
 
     @PutMapping("/{id}")

@@ -42,6 +42,19 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    public double averageByRestaurantId(String restaurantId) {
+        List<Review> reviews = reviewRepository.findByRestaurantId(restaurantId);
+        if (reviews.isEmpty()) {
+            return 0.0;
+        }
+
+        double totalStars = reviews.stream()
+                .mapToInt(Review::getStars)
+                .sum();
+        return totalStars / reviews.size();
+    }
+
+    @Override
     public void deleteById(String id) {
         if (!reviewRepository.existsById(id)) {
             throw new ReviewNotFoundException("Review with id " + id + " not found");

@@ -21,6 +21,7 @@ public class Restaurant {
     private String id;
     private String ownerId;
     private String name;
+    private String phone;
     private String description;
     private String logo;
     private String menu;
