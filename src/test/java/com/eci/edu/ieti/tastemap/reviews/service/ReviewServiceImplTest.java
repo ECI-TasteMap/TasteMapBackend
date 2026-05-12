@@ -75,6 +75,31 @@ class ReviewServiceImplTest {
     }
 
     @Test
+    void testAverageByRestaurantId() {
+        List<Review> reviews = List.of(
+                new Review("1", "user1", "restaurant1", "Good", 5),
+                new Review("2", "user2", "restaurant1", "Ok", 3),
+                new Review("3", "user3", "restaurant1", "Great", 4)
+        );
+        when(reviewRepository.findByRestaurantId("restaurant1")).thenReturn(reviews);
+
+        double average = reviewService.averageByRestaurantId("restaurant1");
+
+        assertEquals(4.0, average);
+        verify(reviewRepository, times(1)).findByRestaurantId("restaurant1");
+    }
+
+    @Test
+    void testAverageByRestaurantIdNoReviews() {
+        when(reviewRepository.findByRestaurantId("restaurant1")).thenReturn(Collections.emptyList());
+
+        double average = reviewService.averageByRestaurantId("restaurant1");
+
+        assertEquals(0.0, average);
+        verify(reviewRepository, times(1)).findByRestaurantId("restaurant1");
+    }
+
+    @Test
     void testDeleteById() {
         when(reviewRepository.existsById("1")).thenReturn(true);
         doNothing().when(reviewRepository).deleteById("1");

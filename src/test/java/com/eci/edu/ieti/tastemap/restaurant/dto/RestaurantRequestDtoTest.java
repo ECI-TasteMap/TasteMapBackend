@@ -34,6 +34,8 @@ class RestaurantRequestDtoTest {
         assertEquals(10, dto.getPriceMin());
         assertEquals(30, dto.getPriceMax());
         assertEquals("9-5", dto.getHour());
+        dto.setPhone("3001234567");
+        assertEquals("3001234567", dto.getPhone());
     }
 }
 

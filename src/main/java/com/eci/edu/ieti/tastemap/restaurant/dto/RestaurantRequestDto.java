@@ -15,6 +15,7 @@ import java.util.Set;
 public class RestaurantRequestDto {
     private String ownerId;
     private String name;
+    private String phone;
     private String description;
     private String logo;
     private String menu;
