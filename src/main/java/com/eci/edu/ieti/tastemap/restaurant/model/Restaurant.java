@@ -31,5 +31,6 @@ public class Restaurant {
     private Integer priceMin;
     private Integer priceMax;
     private String hour;
+    private Double averageRating;
 }
 

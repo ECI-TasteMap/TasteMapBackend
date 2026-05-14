@@ -24,6 +24,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/users").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/ai/history").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/ai/history").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/*/chat").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/restaurants", "/api/v1/restaurants/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/reviews", "/api/v1/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/restaurants").authenticated()

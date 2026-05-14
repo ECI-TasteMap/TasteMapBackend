@@ -26,6 +26,7 @@ public class RestaurantResponseDto {
     private Integer priceMin;
     private Integer priceMax;
     private String hour;
+    private Double averageRating;
     private String openStatus;
 }
 
