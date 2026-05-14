@@ -146,6 +146,10 @@
 						<exclude>**/exception/**</exclude>
 						<exclude>**/mapper/**</exclude>
 						<exclude>**/*Application.class</exclude>
+						<exclude>**/user/config/**</exclude>
+						<exclude>**/restaurant/service/AzureStorageService.class</exclude>
+						<exclude>**/user/service/serviceImpl/ChatServiceImpl.class</exclude>
+						<exclude>**/ai/service/ChatHistoryService.class</exclude>
 					</excludes>
 				</configuration>
 				<executions>
