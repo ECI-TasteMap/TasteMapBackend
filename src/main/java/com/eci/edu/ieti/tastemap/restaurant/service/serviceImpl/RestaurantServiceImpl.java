@@ -34,7 +34,9 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantMapper restaurantMapper;
     private final AzureStorageService azureStorageService;
 
-    public RestaurantServiceImpl(RestaurantRepository restaurantRepository, RestaurantMapper restaurantMapper, AzureStorageService azureStorageService) {
+    public RestaurantServiceImpl(RestaurantRepository restaurantRepository,
+                                 RestaurantMapper restaurantMapper,
+                                 AzureStorageService azureStorageService) {
         this.restaurantRepository = restaurantRepository;
         this.restaurantMapper = restaurantMapper;
         this.azureStorageService = azureStorageService;
@@ -143,6 +145,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setHour(restaurantRequestDto.getHour());
         return restaurantRepository.save(restaurant);
     }
+
 
     @Override
     public Restaurant update(String id,
