@@ -1,13 +1,15 @@
 package com.eci.edu.ieti.tastemap.restaurant.controller;
 
-import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantRequestDto;
 import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantResponseDto;
+import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantOpenStatusResponseDto;
 import com.eci.edu.ieti.tastemap.restaurant.exception.RestaurantNotFoundException;
 import com.eci.edu.ieti.tastemap.restaurant.mapper.RestaurantMapper;
 import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
 import com.eci.edu.ieti.tastemap.restaurant.service.RestaurantService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/v1/restaurants")
+@CrossOrigin(origins = "*")
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
@@ -27,19 +30,50 @@ public class RestaurantController {
         this.restaurantService = restaurantService;
         this.restaurantMapper = restaurantMapper;
     }
+    
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<RestaurantResponseDto> create(
+            @RequestParam String ownerId,
+            @RequestParam String name,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String theme,
+            @RequestParam(required = false) List<String> locations,
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(required = false) Integer priceMin,
+            @RequestParam(required = false) Integer priceMax,
+            @RequestParam(required = false) String hour,
+            @RequestParam(value = "logo", required = false) org.springframework.web.multipart.MultipartFile logoFile,
+            @RequestParam(value = "menu", required = false) org.springframework.web.multipart.MultipartFile menuFile) {
 
-    @PostMapping
-    public ResponseEntity<RestaurantResponseDto> create(@RequestBody RestaurantRequestDto restaurantRequestDto) {
-        Restaurant restaurant = restaurantService.create(restaurantRequestDto);
-        RestaurantResponseDto restaurantResponseDto = restaurantMapper.toRestaurantResponseDto(restaurant);
+        Restaurant restaurant = restaurantService.create(
+                ownerId,
+                name,
+                phone,
+                description,
+                theme,
+                locations,
+                tags,
+                priceMin,
+                priceMax,
+                hour,
+                logoFile,
+                menuFile
+        );
+        RestaurantResponseDto restaurantResponseDto = enrichRestaurantResponseDto(restaurantMapper.toRestaurantResponseDto(restaurant));
         return ResponseEntity.created(URI.create("/api/v1/restaurants/" + restaurant.getId())).body(restaurantResponseDto);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<RestaurantResponseDto> findById(@PathVariable String id) {
         Restaurant restaurant = restaurantService.findById(id).orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + id + " not found"));
-        RestaurantResponseDto restaurantResponseDto = restaurantMapper.toRestaurantResponseDto(restaurant);
+        RestaurantResponseDto restaurantResponseDto = enrichRestaurantResponseDto(restaurantMapper.toRestaurantResponseDto(restaurant));
         return ResponseEntity.ok(restaurantResponseDto);
+    }
+
+    @GetMapping("/{id}/open-status")
+    public ResponseEntity<RestaurantOpenStatusResponseDto> openStatus(@PathVariable String id) {
+        return ResponseEntity.ok(restaurantService.getOpenStatusByRestaurantId(id));
     }
 
     @GetMapping
@@ -47,15 +81,48 @@ public class RestaurantController {
         List<Restaurant> restaurants = restaurantService.all();
         List<RestaurantResponseDto> restaurantResponseDtos = restaurants.stream()
                 .map(restaurantMapper::toRestaurantResponseDto)
+                .map(this::enrichRestaurantResponseDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(restaurantResponseDtos);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<RestaurantResponseDto> update(@PathVariable String id, @RequestBody RestaurantRequestDto restaurantRequestDto) {
-        Restaurant restaurant = restaurantService.update(id, restaurantRequestDto);
-        RestaurantResponseDto restaurantResponseDto = restaurantMapper.toRestaurantResponseDto(restaurant);
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<RestaurantResponseDto> updateMultipart(
+            @PathVariable String id,
+            @RequestParam(required = false) String ownerId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String theme,
+            @RequestParam(required = false) List<String> locations,
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(required = false) Integer priceMin,
+            @RequestParam(required = false) Integer priceMax,
+            @RequestParam(required = false) String hour,
+            @RequestParam(value = "logo", required = false) MultipartFile logoFile,
+            @RequestParam(value = "menu", required = false) MultipartFile menuFile) {
+        Restaurant restaurant = restaurantService.update(
+                id,
+                ownerId,
+                name,
+                phone,
+                description,
+                theme,
+                locations,
+                tags,
+                priceMin,
+                priceMax,
+                hour,
+                logoFile,
+                menuFile
+        );
+        RestaurantResponseDto restaurantResponseDto = enrichRestaurantResponseDto(restaurantMapper.toRestaurantResponseDto(restaurant));
         return ResponseEntity.ok(restaurantResponseDto);
+    }
+
+    private RestaurantResponseDto enrichRestaurantResponseDto(RestaurantResponseDto dto) {
+        dto.setOpenStatus(restaurantService.getOpenStatus(dto.getHour()));
+        return dto;
     }
 
     @DeleteMapping("/{id}")

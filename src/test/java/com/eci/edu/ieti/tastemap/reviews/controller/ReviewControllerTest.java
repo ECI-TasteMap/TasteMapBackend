@@ -2,6 +2,7 @@ package com.eci.edu.ieti.tastemap.reviews.controller;
 
 import com.eci.edu.ieti.tastemap.reviews.dto.ReviewRequestDto;
 import com.eci.edu.ieti.tastemap.reviews.dto.ReviewResponseDto;
+import com.eci.edu.ieti.tastemap.reviews.dto.ReviewAverageResponseDto;
 import com.eci.edu.ieti.tastemap.reviews.mapper.ReviewMapper;
 import com.eci.edu.ieti.tastemap.reviews.model.Review;
 import com.eci.edu.ieti.tastemap.reviews.service.ReviewService;
@@ -79,6 +80,18 @@ class ReviewControllerTest {
         assertEquals(1, response.getBody().size());
         assertEquals(reviewResponseDto, response.getBody().get(0));
         verify(reviewService, times(1)).all();
+    }
+
+    @Test
+    void testAverageByRestaurantId() {
+        when(reviewService.averageByRestaurantId("restaurant1")).thenReturn(4.0);
+
+        ResponseEntity<ReviewAverageResponseDto> response = reviewController.averageByRestaurantId("restaurant1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("restaurant1", response.getBody().getRestaurantId());
+        assertEquals(4.0, response.getBody().getAverage());
+        verify(reviewService, times(1)).averageByRestaurantId("restaurant1");
     }
 
     @Test

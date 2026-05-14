@@ -21,6 +21,7 @@ public class Restaurant {
     private String id;
     private String ownerId;
     private String name;
+    private String phone;
     private String description;
     private String logo;
     private String menu;
@@ -30,5 +31,6 @@ public class Restaurant {
     private Integer priceMin;
     private Integer priceMax;
     private String hour;
+    private Double averageRating;
 }
 
