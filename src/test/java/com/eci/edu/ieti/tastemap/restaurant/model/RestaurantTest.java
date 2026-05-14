@@ -36,6 +36,8 @@ class RestaurantTest {
         assertEquals(10, restaurant.getPriceMin());
         assertEquals(30, restaurant.getPriceMax());
         assertEquals("9-5", restaurant.getHour());
+        restaurant.setPhone("3001234567");
+        assertEquals("3001234567", restaurant.getPhone());
     }
 }
 

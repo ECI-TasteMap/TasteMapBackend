@@ -15,6 +15,7 @@ public interface RestaurantMapper {
     @Mapping(target = "id", ignore = true)
     Restaurant toRestaurant(RestaurantRequestDto restaurantRequestDto);
 
+    @Mapping(target = "openStatus", ignore = true)
     RestaurantResponseDto toRestaurantResponseDto(Restaurant restaurant);
 }
 

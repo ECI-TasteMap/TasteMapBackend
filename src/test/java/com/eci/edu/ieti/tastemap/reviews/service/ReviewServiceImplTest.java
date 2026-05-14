@@ -1,5 +1,7 @@
 package com.eci.edu.ieti.tastemap.reviews.service;
 
+import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
+import com.eci.edu.ieti.tastemap.restaurant.repository.RestaurantRepository;
 import com.eci.edu.ieti.tastemap.reviews.dto.ReviewRequestDto;
 import com.eci.edu.ieti.tastemap.reviews.exception.ReviewNotFoundException;
 import com.eci.edu.ieti.tastemap.reviews.mapper.ReviewMapper;
@@ -16,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,6 +31,9 @@ class ReviewServiceImplTest {
 
     @Mock
     private ReviewMapper reviewMapper;
+
+    @Mock
+    private RestaurantRepository restaurantRepository;
 
     @InjectMocks
     private ReviewServiceImpl reviewService;
@@ -43,13 +49,23 @@ class ReviewServiceImplTest {
 
     @Test
     void testCreate() {
-        when(reviewMapper.toReview(reviewRequestDto)).thenReturn(review);
-        when(reviewRepository.save(review)).thenReturn(review);
+        String restaurantId = "restaurant1";
+        Review reviewBeforeSave = new Review(null, "user1", restaurantId, "Great!", 5);
+        reviewBeforeSave.setId("1");
+        
+        Restaurant restaurant = new Restaurant("restaurant1", "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North"), Set.of("Italian"), 10, 30, "9-5", 0.0);
+        
+        when(reviewMapper.toReview(reviewRequestDto)).thenReturn(reviewBeforeSave);
+        when(reviewRepository.save(reviewBeforeSave)).thenReturn(review);
+        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        when(reviewRepository.findByRestaurantId(restaurantId)).thenReturn(List.of(review));
+        when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
 
         Review createdReview = reviewService.create(reviewRequestDto);
 
         assertEquals(review, createdReview);
-        verify(reviewRepository, times(1)).save(review);
+        verify(reviewRepository, times(1)).save(reviewBeforeSave);
+        verify(restaurantRepository, times(1)).save(any(Restaurant.class));
     }
 
     @Test
@@ -75,18 +91,52 @@ class ReviewServiceImplTest {
     }
 
     @Test
+    void testAverageByRestaurantId() {
+        List<Review> reviews = List.of(
+                new Review("1", "user1", "restaurant1", "Good", 5),
+                new Review("2", "user2", "restaurant1", "Ok", 3),
+                new Review("3", "user3", "restaurant1", "Great", 4)
+        );
+        when(reviewRepository.findByRestaurantId("restaurant1")).thenReturn(reviews);
+
+        double average = reviewService.averageByRestaurantId("restaurant1");
+
+        assertEquals(4.0, average);
+        verify(reviewRepository, times(1)).findByRestaurantId("restaurant1");
+    }
+
+    @Test
+    void testAverageByRestaurantIdNoReviews() {
+        when(reviewRepository.findByRestaurantId("restaurant1")).thenReturn(Collections.emptyList());
+
+        double average = reviewService.averageByRestaurantId("restaurant1");
+
+        assertEquals(0.0, average);
+        verify(reviewRepository, times(1)).findByRestaurantId("restaurant1");
+    }
+
+    @Test
     void testDeleteById() {
-        when(reviewRepository.existsById("1")).thenReturn(true);
+        String restaurantId = "restaurant1";
+        review.setRestaurantId(restaurantId);
+        
+        Restaurant restaurant = new Restaurant(restaurantId, "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North"), Set.of("Italian"), 10, 30, "9-5", 5.0);
+        
+        when(reviewRepository.findById("1")).thenReturn(Optional.of(review));
         doNothing().when(reviewRepository).deleteById("1");
+        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        when(reviewRepository.findByRestaurantId(restaurantId)).thenReturn(Collections.emptyList());
+        when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
 
         reviewService.deleteById("1");
 
         verify(reviewRepository, times(1)).deleteById("1");
+        verify(restaurantRepository, times(1)).save(any(Restaurant.class));
     }
 
     @Test
     void testDeleteByIdNotFound() {
-        when(reviewRepository.existsById("1")).thenReturn(false);
+        when(reviewRepository.findById("1")).thenReturn(Optional.empty());
 
         assertThrows(ReviewNotFoundException.class, () -> reviewService.deleteById("1"));
         verify(reviewRepository, never()).deleteById("1");
@@ -94,13 +144,22 @@ class ReviewServiceImplTest {
 
     @Test
     void testUpdate() {
+        String restaurantId = "restaurant1";
+        review.setRestaurantId(restaurantId);
+        
+        Restaurant restaurant = new Restaurant(restaurantId, "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North"), Set.of("Italian"), 10, 30, "9-5", 4.0);
+        
         when(reviewRepository.findById("1")).thenReturn(Optional.of(review));
         when(reviewRepository.save(review)).thenReturn(review);
+        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        when(reviewRepository.findByRestaurantId(restaurantId)).thenReturn(List.of(review));
+        when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
 
         Review updatedReview = reviewService.update("1", reviewRequestDto);
 
         assertEquals(review, updatedReview);
         verify(reviewRepository, times(1)).save(review);
+        verify(restaurantRepository, times(1)).save(any(Restaurant.class));
     }
 
     @Test

@@ -23,6 +23,7 @@ class RestaurantResponseDtoTest {
         dto.setPriceMin(10);
         dto.setPriceMax(30);
         dto.setHour("9-5");
+        dto.setOpenStatus("ABIERTO");
 
         assertEquals("1", dto.getId());
         assertEquals("owner1", dto.getOwnerId());
@@ -36,6 +37,9 @@ class RestaurantResponseDtoTest {
         assertEquals(10, dto.getPriceMin());
         assertEquals(30, dto.getPriceMax());
         assertEquals("9-5", dto.getHour());
+        assertEquals("ABIERTO", dto.getOpenStatus());
+        dto.setPhone("3001234567");
+        assertEquals("3001234567", dto.getPhone());
     }
 }
 
