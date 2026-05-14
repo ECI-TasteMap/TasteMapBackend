@@ -40,8 +40,8 @@ class RestaurantControllerTest {
 
     @BeforeEach
     void setUp() {
-        restaurant = new Restaurant("1", "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North", "Downtown"), Set.of("Italian", "Family"), 10, 30, "9-5");
-        restaurantResponseDto = new RestaurantResponseDto("1", "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North", "Downtown"), Set.of("Italian", "Family"), 10, 30, "9-5", null);
+        restaurant = new Restaurant("1", "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North", "Downtown"), Set.of("Italian", "Family"), 10, 30, "9-5", null);
+        restaurantResponseDto = new RestaurantResponseDto("1", "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North", "Downtown"), Set.of("Italian", "Family"), 10, 30, "9-5", null, null);
         restaurantOpenStatusResponseDto = new RestaurantOpenStatusResponseDto("1", "ABIERTO");
     }
 
