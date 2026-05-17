@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/v1/reservations")
+@CrossOrigin(origins = "*")
 public class ReservationController {
     
     private final ReservationService reservationService;
