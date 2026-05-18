@@ -1,7 +1,13 @@
 package com.eci.edu.ieti.tastemap.restaurant.dto;
 
+import com.eci.edu.ieti.tastemap.restaurant.model.Location;
+import com.eci.edu.ieti.tastemap.restaurant.model.Schedule;
 import org.junit.jupiter.api.Test;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,12 +23,11 @@ class RestaurantResponseDtoTest {
         dto.setDescription("Description");
         dto.setLogo("logo.png");
         dto.setMenu("menu.pdf");
-        dto.setTheme("Theme");
-        dto.setLocations(Set.of("North", "Downtown"));
+        dto.setTheme(List.of("Theme"));
+        dto.setLocations(List.of(buildLocation()));
         dto.setTags(Set.of("Italian", "Family"));
         dto.setPriceMin(10);
         dto.setPriceMax(30);
-        dto.setHour("9-5");
         dto.setOpenStatus("ABIERTO");
 
         assertEquals("1", dto.getId());
@@ -31,15 +36,18 @@ class RestaurantResponseDtoTest {
         assertEquals("Description", dto.getDescription());
         assertEquals("logo.png", dto.getLogo());
         assertEquals("menu.pdf", dto.getMenu());
-        assertEquals("Theme", dto.getTheme());
-        assertEquals(Set.of("North", "Downtown"), dto.getLocations());
+        assertEquals(List.of("Theme"), dto.getTheme());
+        assertEquals(List.of(buildLocation()), dto.getLocations());
         assertEquals(Set.of("Italian", "Family"), dto.getTags());
         assertEquals(10, dto.getPriceMin());
         assertEquals(30, dto.getPriceMax());
-        assertEquals("9-5", dto.getHour());
         assertEquals("ABIERTO", dto.getOpenStatus());
-        dto.setPhone("3001234567");
-        assertEquals("3001234567", dto.getPhone());
+    }
+
+    private Location buildLocation() {
+        DayOfWeek today = LocalDate.now(ZoneId.of("America/Bogota")).getDayOfWeek();
+        Schedule schedule = new Schedule(Set.of(today), "00:00", "23:59", false);
+        return new Location("loc-1", "North", "3001234567", 4.5, List.of(schedule));
     }
 }
 

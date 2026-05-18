@@ -1,9 +1,13 @@
 package com.eci.edu.ieti.tastemap.restaurant.controller;
 
-import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantResponseDto;
+import com.eci.edu.ieti.tastemap.restaurant.dto.LocationOpenStatusResponseDto;
+import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantRequestDto;
 import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantOpenStatusResponseDto;
+import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantResponseDto;
 import com.eci.edu.ieti.tastemap.restaurant.mapper.RestaurantMapper;
+import com.eci.edu.ieti.tastemap.restaurant.model.Location;
 import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
+import com.eci.edu.ieti.tastemap.restaurant.model.Schedule;
 import com.eci.edu.ieti.tastemap.restaurant.service.RestaurantService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -40,9 +47,13 @@ class RestaurantControllerTest {
 
     @BeforeEach
     void setUp() {
-        restaurant = new Restaurant("1", "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North", "Downtown"), Set.of("Italian", "Family"), 10, 30, "9-5", null);
-        restaurantResponseDto = new RestaurantResponseDto("1", "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North", "Downtown"), Set.of("Italian", "Family"), 10, 30, "9-5", null, null);
-        restaurantOpenStatusResponseDto = new RestaurantOpenStatusResponseDto("1", "ABIERTO");
+        restaurant = buildRestaurant();
+        restaurantResponseDto = buildRestaurantResponseDto();
+        restaurantOpenStatusResponseDto = new RestaurantOpenStatusResponseDto(
+                "1",
+                List.of(new LocationOpenStatusResponseDto(buildLocation(), "ABIERTO"))
+        );
+        lenient().when(restaurantService.getOpenStatus(anyList())).thenReturn("ABIERTO");
     }
 
     @Test
@@ -52,53 +63,15 @@ class RestaurantControllerTest {
 
     @Test
     void testCreate() {
-        when(restaurantService.create(
-            anyString(),
-            anyString(),
-            any(),
-            any(),
-            any(),
-            anyList(),
-            anyList(),
-            any(),
-            any(),
-            any(),
-            isNull(),
-            isNull()
-        )).thenReturn(restaurant);
+        RestaurantRequestDto requestDto = buildRequestDto();
+        when(restaurantService.create(any(RestaurantRequestDto.class), isNull(), isNull())).thenReturn(restaurant);
         when(restaurantMapper.toRestaurantResponseDto(restaurant)).thenReturn(restaurantResponseDto);
 
-        ResponseEntity<RestaurantResponseDto> response = restaurantController.create(
-            "owner1",
-            "Test Restaurant",
-            "3001234567",
-            "Description",
-            "Theme",
-            List.of("North", "Downtown"),
-            List.of("Italian", "Family"),
-            10,
-            30,
-            "9-5",
-            null,
-            null
-        );
+        ResponseEntity<RestaurantResponseDto> response = restaurantController.create(requestDto, null, null);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(restaurantResponseDto, response.getBody());
-        verify(restaurantService, times(1)).create(
-            eq("owner1"),
-            eq("Test Restaurant"),
-            eq("3001234567"),
-            eq("Description"),
-            eq("Theme"),
-            eq(List.of("North", "Downtown")),
-            eq(List.of("Italian", "Family")),
-            eq(10),
-            eq(30),
-            eq("9-5"),
-            isNull(),
-            isNull()
-        );
+        verify(restaurantService, times(1)).create(eq(requestDto), isNull(), isNull());
     }
 
     @Test
@@ -137,59 +110,19 @@ class RestaurantControllerTest {
         verify(restaurantService, times(1)).all();
     }
 
-        @Test
-        void testUpdateMultipart() {
-        when(restaurantService.update(
-            eq("1"),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            isNull(),
-            isNull()
-        )).thenReturn(restaurant);
+    @Test
+    void testUpdateMultipart() {
+        RestaurantRequestDto requestDto = buildRequestDto();
+        requestDto.setName("Updated Name");
+        when(restaurantService.update(eq("1"), any(RestaurantRequestDto.class), isNull(), isNull())).thenReturn(restaurant);
         when(restaurantMapper.toRestaurantResponseDto(restaurant)).thenReturn(restaurantResponseDto);
 
-        ResponseEntity<RestaurantResponseDto> response = restaurantController.updateMultipart(
-            "1",
-            null,
-            "Updated Name",
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-        );
+        ResponseEntity<RestaurantResponseDto> response = restaurantController.updateMultipart("1", requestDto, null, null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(restaurantResponseDto, response.getBody());
-        verify(restaurantService, times(1)).update(
-            eq("1"),
-            isNull(),
-            eq("Updated Name"),
-            isNull(),
-            isNull(),
-            isNull(),
-            isNull(),
-            isNull(),
-            isNull(),
-            isNull(),
-            isNull(),
-            isNull(),
-            isNull()
-        );
-        }
+        verify(restaurantService, times(1)).update(eq("1"), eq(requestDto), isNull(), isNull());
+    }
 
     @Test
     void testDeleteById() {
@@ -199,6 +132,59 @@ class RestaurantControllerTest {
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(restaurantService, times(1)).deleteById("1");
+    }
+
+    private Restaurant buildRestaurant() {
+        Restaurant value = new Restaurant();
+        value.setId("1");
+        value.setOwnerId("owner1");
+        value.setName("Test Restaurant");
+        value.setDescription("Description");
+        value.setLogo("logo.png");
+        value.setMenu("menu.pdf");
+        value.setTheme(List.of("Theme"));
+        value.setLocations(List.of(buildLocation()));
+        value.setTags(Set.of("Italian", "Family"));
+        value.setPriceMin(10);
+        value.setPriceMax(30);
+        return value;
+    }
+
+    private RestaurantResponseDto buildRestaurantResponseDto() {
+        RestaurantResponseDto value = new RestaurantResponseDto();
+        value.setId("1");
+        value.setOwnerId("owner1");
+        value.setName("Test Restaurant");
+        value.setDescription("Description");
+        value.setLogo("logo.png");
+        value.setMenu("menu.pdf");
+        value.setTheme(List.of("Theme"));
+        value.setLocations(List.of(buildLocation()));
+        value.setTags(Set.of("Italian", "Family"));
+        value.setPriceMin(10);
+        value.setPriceMax(30);
+        return value;
+    }
+
+    private RestaurantRequestDto buildRequestDto() {
+        RestaurantRequestDto value = new RestaurantRequestDto();
+        value.setOwnerId("owner1");
+        value.setName("Test Restaurant");
+        value.setDescription("Description");
+        value.setLogo("logo.png");
+        value.setMenu("menu.pdf");
+        value.setTheme(List.of("Theme"));
+        value.setLocations(List.of(buildLocation()));
+        value.setTags(Set.of("Italian", "Family"));
+        value.setPriceMin(10);
+        value.setPriceMax(30);
+        return value;
+    }
+
+    private Location buildLocation() {
+        DayOfWeek today = LocalDate.now(ZoneId.of("America/Bogota")).getDayOfWeek();
+        Schedule schedule = new Schedule(Set.of(today), "00:00", "23:59", false);
+        return new Location("loc-1", "North", "3001234567", 4.5, List.of(schedule));
     }
 }
 

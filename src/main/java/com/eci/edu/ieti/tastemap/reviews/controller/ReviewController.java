@@ -53,6 +53,24 @@ public class ReviewController {
         return ResponseEntity.ok(reviewResponseDtos);
     }
 
+    @GetMapping("/restaurant/{restaurantId}")
+    public ResponseEntity<List<ReviewResponseDto>> findByRestaurantId(@PathVariable String restaurantId) {
+        List<Review> reviews = reviewService.findByRestaurantId(restaurantId);
+        List<ReviewResponseDto> reviewResponseDtos = reviews.stream()
+                .map(reviewMapper::toReviewResponseDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reviewResponseDtos);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ReviewResponseDto>> findByUserId(@PathVariable String userId) {
+        List<Review> reviews = reviewService.findByUserId(userId);
+        List<ReviewResponseDto> reviewResponseDtos = reviews.stream()
+                .map(reviewMapper::toReviewResponseDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reviewResponseDtos);
+    }
+
     @GetMapping("/restaurant/{restaurantId}/average")
     public ResponseEntity<ReviewAverageResponseDto> averageByRestaurantId(@PathVariable String restaurantId) {
         double average = reviewService.averageByRestaurantId(restaurantId);

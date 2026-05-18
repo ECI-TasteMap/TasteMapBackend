@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.eci.edu.ieti.tastemap.restaurant.model.Location;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -21,16 +23,13 @@ public class Restaurant {
     private String id;
     private String ownerId;
     private String name;
-    private String phone;
     private String description;
     private String logo;
     private String menu;
-    private String theme;
-    private Set<String> locations;
+    private List<String> theme;
+    private List<Location> locations;
     private Set<String> tags;
     private Integer priceMin;
     private Integer priceMax;
-    private String hour;
-    private Double averageRating;
 }
 

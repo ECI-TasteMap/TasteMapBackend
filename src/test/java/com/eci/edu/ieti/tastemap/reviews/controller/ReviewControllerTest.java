@@ -83,6 +83,32 @@ class ReviewControllerTest {
     }
 
     @Test
+    void testFindByRestaurantId() {
+        when(reviewService.findByRestaurantId("restaurant1")).thenReturn(Collections.singletonList(review));
+        when(reviewMapper.toReviewResponseDto(review)).thenReturn(reviewResponseDto);
+
+        ResponseEntity<List<ReviewResponseDto>> response = reviewController.findByRestaurantId("restaurant1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        assertEquals(reviewResponseDto, response.getBody().get(0));
+        verify(reviewService, times(1)).findByRestaurantId("restaurant1");
+    }
+
+    @Test
+    void testFindByUserId() {
+        when(reviewService.findByUserId("user1")).thenReturn(Collections.singletonList(review));
+        when(reviewMapper.toReviewResponseDto(review)).thenReturn(reviewResponseDto);
+
+        ResponseEntity<List<ReviewResponseDto>> response = reviewController.findByUserId("user1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        assertEquals(reviewResponseDto, response.getBody().get(0));
+        verify(reviewService, times(1)).findByUserId("user1");
+    }
+
+    @Test
     void testAverageByRestaurantId() {
         when(reviewService.averageByRestaurantId("restaurant1")).thenReturn(4.0);
 

@@ -1,10 +1,13 @@
 package com.eci.edu.ieti.tastemap.restaurant.service;
 
+import com.eci.edu.ieti.tastemap.restaurant.dto.LocationOpenStatusResponseDto;
 import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantRequestDto;
 import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantOpenStatusResponseDto;
 import com.eci.edu.ieti.tastemap.restaurant.exception.RestaurantNotFoundException;
 import com.eci.edu.ieti.tastemap.restaurant.mapper.RestaurantMapper;
+import com.eci.edu.ieti.tastemap.restaurant.model.Location;
 import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
+import com.eci.edu.ieti.tastemap.restaurant.model.Schedule;
 import com.eci.edu.ieti.tastemap.restaurant.repository.RestaurantRepository;
 import com.eci.edu.ieti.tastemap.restaurant.service.AzureStorageService;
 import com.eci.edu.ieti.tastemap.restaurant.service.serviceImpl.RestaurantServiceImpl;
@@ -15,6 +18,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -43,8 +49,8 @@ class RestaurantServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        restaurant = new Restaurant("1", "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North", "Downtown"), Set.of("Italian", "Family"), 10, 30, "9-5", null);
-        restaurantRequestDto = new RestaurantRequestDto("owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North", "Downtown"), Set.of("Italian", "Family"), 10, 30, "9-5");
+        restaurant = buildRestaurant();
+        restaurantRequestDto = buildRequestDto();
     }
 
     @Test
@@ -78,20 +84,7 @@ class RestaurantServiceImplTest {
         when(restaurantMapper.toRestaurant(any(RestaurantRequestDto.class))).thenReturn(restaurant);
         when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
 
-        Restaurant createdRestaurant = restaurantService.create(
-            "owner1",
-            "Test Restaurant",
-            "3001234567",
-            "Description",
-            "Theme",
-            List.of("North", "Downtown"),
-            List.of("Italian", "Family"),
-            10,
-            30,
-            "9-5",
-            logoFile,
-            menuFile
-        );
+        Restaurant createdRestaurant = restaurantService.create(restaurantRequestDto, logoFile, menuFile);
 
         assertEquals(restaurant, createdRestaurant);
         verify(azureStorageService, times(1)).uploadImage(logoFile);
@@ -127,7 +120,9 @@ class RestaurantServiceImplTest {
 
         RestaurantOpenStatusResponseDto response = restaurantService.getOpenStatusByRestaurantId("1");
 
-        assertEquals(new RestaurantOpenStatusResponseDto("1", "ABIERTO"), response);
+        assertEquals("1", response.getRestaurantId());
+        assertEquals(1, response.getLocationStatuses().size());
+        assertEquals("ABIERTO", response.getLocationStatuses().get(0).getOpenStatus());
         verify(restaurantRepository, times(1)).findById("1");
     }
 
@@ -164,21 +159,7 @@ class RestaurantServiceImplTest {
         when(restaurantRepository.findById("1")).thenReturn(Optional.of(restaurant));
         when(restaurantRepository.save(restaurant)).thenReturn(restaurant);
 
-        Restaurant updatedRestaurant = restaurantService.update(
-            "1",
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-        );
+        Restaurant updatedRestaurant = restaurantService.update("1", restaurantRequestDto, null, null);
 
         assertEquals(restaurant, updatedRestaurant);
         verify(restaurantRepository, times(1)).save(restaurant);
@@ -205,21 +186,10 @@ class RestaurantServiceImplTest {
         when(azureStorageService.uploadMenu(menuFile)).thenReturn("https://blob/new-menu.pdf");
         when(restaurantRepository.save(restaurant)).thenReturn(restaurant);
 
-        restaurantService.update(
-            "1",
-            null,
-            "Updated Name",
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            logoFile,
-            menuFile
-        );
+        RestaurantRequestDto updatedRequest = new RestaurantRequestDto();
+        updatedRequest.setName("Updated Name");
+
+        restaurantService.update("1", updatedRequest, logoFile, menuFile);
 
         verify(azureStorageService, times(1)).deleteFileByUrl("logo.png");
         verify(azureStorageService, times(1)).deleteFileByUrl("menu.pdf");
@@ -229,22 +199,45 @@ class RestaurantServiceImplTest {
     void testUpdateNotFound() {
         when(restaurantRepository.findById("1")).thenReturn(Optional.empty());
 
-        assertThrows(RestaurantNotFoundException.class, () -> restaurantService.update(
-            "1",
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-        ));
+        assertThrows(RestaurantNotFoundException.class, () -> restaurantService.update("1", restaurantRequestDto, null, null));
         verify(restaurantRepository, never()).save(any(Restaurant.class));
+    }
+
+    private Restaurant buildRestaurant() {
+        Restaurant value = new Restaurant();
+        value.setId("1");
+        value.setOwnerId("owner1");
+        value.setName("Test Restaurant");
+        value.setDescription("Description");
+        value.setLogo("logo.png");
+        value.setMenu("menu.pdf");
+        value.setTheme(List.of("Theme"));
+        value.setLocations(List.of(buildOpenLocation()));
+        value.setTags(Set.of("Italian", "Family"));
+        value.setPriceMin(10);
+        value.setPriceMax(30);
+        return value;
+    }
+
+    private RestaurantRequestDto buildRequestDto() {
+        RestaurantRequestDto value = new RestaurantRequestDto();
+        value.setOwnerId("owner1");
+        value.setName("Test Restaurant");
+        value.setDescription("Description");
+        value.setLogo("logo.png");
+        value.setMenu("menu.pdf");
+        value.setTheme(List.of("Theme"));
+        value.setLocations(List.of(buildOpenLocation()));
+        value.setTags(Set.of("Italian", "Family"));
+        value.setPriceMin(10);
+        value.setPriceMax(30);
+        return value;
+    }
+
+    private Location buildOpenLocation() {
+        DayOfWeek today = LocalDate.now(ZoneId.of("America/Bogota")).getDayOfWeek();
+        Schedule schedule = new Schedule(Set.of(today), "00:00", "23:59", false);
+        return new Location("loc-1", "North", "3001234567", 4.5, List.of(schedule));
     }
 }
 

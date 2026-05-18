@@ -6,6 +6,7 @@ import com.eci.edu.ieti.tastemap.reviews.mapper.ReviewMapper;
 import com.eci.edu.ieti.tastemap.reviews.model.Review;
 import com.eci.edu.ieti.tastemap.reviews.repository.ReviewRepository;
 import com.eci.edu.ieti.tastemap.reviews.service.ReviewService;
+import com.eci.edu.ieti.tastemap.restaurant.model.Location;
 import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
 import com.eci.edu.ieti.tastemap.restaurant.repository.RestaurantRepository;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,16 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<Review> all() {
         return reviewRepository.findAll();
+    }
+
+    @Override
+    public List<Review> findByRestaurantId(String restaurantId) {
+        return reviewRepository.findByRestaurantId(restaurantId);
+    }
+
+    @Override
+    public List<Review> findByUserId(String userId) {
+        return reviewRepository.findByUserId(userId);
     }
 
     @Override
@@ -101,7 +112,11 @@ public class ReviewServiceImpl implements ReviewService {
                 ? 0.0
                 : reviews.stream().mapToInt(Review::getStars).average().orElse(0.0);
 
-        restaurant.setAverageRating(average);
+        if (restaurant.getLocations() != null) {
+            for (Location location : restaurant.getLocations()) {
+                location.setAverageRating(average);
+            }
+        }
         restaurantRepository.save(restaurant);
     }
 }
