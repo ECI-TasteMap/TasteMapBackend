@@ -3,21 +3,16 @@ package com.eci.edu.ieti.tastemap.restaurant.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-/**
- * Represents the location of a restaurant.
- */
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "locations")
 public class Location {
-
-    @Id
     private String id;
-    private String restaurantId;
-    private String geolocation;
+    private String address;
+    private String phone;
+    private Double averageRating;
+    private List<Schedule> schedules;
 }
-

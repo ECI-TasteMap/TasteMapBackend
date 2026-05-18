@@ -1,27 +1,34 @@
 package com.eci.edu.ieti.tastemap.restaurant.service.serviceImpl;
 
-import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantRequestDto;
+import com.eci.edu.ieti.tastemap.restaurant.dto.LocationOpenStatusResponseDto;
 import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantOpenStatusResponseDto;
+import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantRequestDto;
 import com.eci.edu.ieti.tastemap.restaurant.exception.RestaurantNotFoundException;
 import com.eci.edu.ieti.tastemap.restaurant.mapper.RestaurantMapper;
+import com.eci.edu.ieti.tastemap.restaurant.model.Location;
 import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
+import com.eci.edu.ieti.tastemap.restaurant.model.Schedule;
 import com.eci.edu.ieti.tastemap.restaurant.repository.RestaurantRepository;
-import com.eci.edu.ieti.tastemap.restaurant.service.RestaurantService;
 import com.eci.edu.ieti.tastemap.restaurant.service.AzureStorageService;
-import org.springframework.stereotype.Service;
+import com.eci.edu.ieti.tastemap.restaurant.service.RestaurantService;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -50,29 +57,12 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public Restaurant create(String ownerId,
-                             String name,
-                             String phone,
-                             String description,
-                             String theme,
-                             List<String> locations,
-                             List<String> tags,
-                             Integer priceMin,
-                             Integer priceMax,
-                             String hour,
+    public Restaurant create(RestaurantRequestDto restaurantRequestDto,
                              MultipartFile logoFile,
                              MultipartFile menuFile) {
-        RestaurantRequestDto restaurantRequestDto = new RestaurantRequestDto();
-        restaurantRequestDto.setOwnerId(ownerId);
-        restaurantRequestDto.setName(name);
-        restaurantRequestDto.setPhone(phone);
-        restaurantRequestDto.setDescription(description);
-        restaurantRequestDto.setTheme(theme);
-        restaurantRequestDto.setLocations(locations == null ? null : new LinkedHashSet<>(locations));
-        restaurantRequestDto.setTags(tags == null ? null : new LinkedHashSet<>(tags));
-        restaurantRequestDto.setPriceMin(priceMin);
-        restaurantRequestDto.setPriceMax(priceMax);
-        restaurantRequestDto.setHour(hour);
+        if (restaurantRequestDto == null) {
+            restaurantRequestDto = new RestaurantRequestDto();
+        }
 
         if (logoFile != null && !logoFile.isEmpty()) {
             String contentType = logoFile.getContentType();
@@ -104,15 +94,22 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public String getOpenStatus(String hourRange) {
-        return isRestaurantOpen(hourRange) ? "ABIERTO" : "CERRADO";
+    public String getOpenStatus(Location location) {
+        return isLocationOpen(location) ? "ABIERTO" : "CERRADO";
     }
 
     @Override
     public RestaurantOpenStatusResponseDto getOpenStatusByRestaurantId(String id) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + id + " not found"));
-        return new RestaurantOpenStatusResponseDto(restaurant.getId(), getOpenStatus(restaurant.getHour()));
+
+        List<LocationOpenStatusResponseDto> locationStatuses = restaurant.getLocations() == null
+                ? List.of()
+                : restaurant.getLocations().stream()
+                .map(location -> new LocationOpenStatusResponseDto(location, getOpenStatus(location)))
+                .collect(Collectors.toList());
+
+        return new RestaurantOpenStatusResponseDto(restaurant.getId(), locationStatuses);
     }
 
     @Override
@@ -125,58 +122,40 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurantRepository.deleteById(id);
     }
 
-    private Restaurant updateFromDto(String id, RestaurantRequestDto restaurantRequestDto) {
-        Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + id + " not found"));
-
-        cleanupIfRemovedOrChanged(restaurant.getLogo(), restaurantRequestDto.getLogo());
-        cleanupIfRemovedOrChanged(restaurant.getMenu(), restaurantRequestDto.getMenu());
-
-        restaurant.setOwnerId(restaurantRequestDto.getOwnerId());
-        restaurant.setName(restaurantRequestDto.getName());
-        restaurant.setPhone(restaurantRequestDto.getPhone());
-        restaurant.setDescription(restaurantRequestDto.getDescription());
-        restaurant.setLogo(restaurantRequestDto.getLogo());
-        restaurant.setMenu(restaurantRequestDto.getMenu());
-        restaurant.setTheme(restaurantRequestDto.getTheme());
-        restaurant.setLocations(normalizeLocations(restaurantRequestDto.getLocations()));
-        restaurant.setTags(restaurantRequestDto.getTags());
-        restaurant.setPriceMin(restaurantRequestDto.getPriceMin());
-        restaurant.setPriceMax(restaurantRequestDto.getPriceMax());
-        restaurant.setHour(restaurantRequestDto.getHour());
-        return restaurantRepository.save(restaurant);
-    }
-
-
     @Override
     public Restaurant update(String id,
-                             String ownerId,
-                             String name,
-                             String phone,
-                             String description,
-                             String theme,
-                             List<String> locations,
-                             List<String> tags,
-                             Integer priceMin,
-                             Integer priceMax,
-                             String hour,
+                             RestaurantRequestDto restaurantRequestDto,
                              MultipartFile logoFile,
                              MultipartFile menuFile) {
         Restaurant existing = restaurantRepository.findById(id)
                 .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + id + " not found"));
 
         RestaurantRequestDto request = new RestaurantRequestDto();
-        request.setOwnerId(ownerId != null ? ownerId : existing.getOwnerId());
-        request.setName(name != null ? name : existing.getName());
-        request.setPhone(phone != null ? phone : existing.getPhone());
-        request.setDescription(description != null ? description : existing.getDescription());
-        request.setTheme(theme != null ? theme : existing.getTheme());
-        request.setLocations(locations != null ? new LinkedHashSet<>(locations) : existing.getLocations());
-        request.setTags(tags != null ? new LinkedHashSet<>(tags) : existing.getTags());
-        request.setPriceMin(priceMin != null ? priceMin : existing.getPriceMin());
-        request.setPriceMax(priceMax != null ? priceMax : existing.getPriceMax());
-        request.setHour(hour != null ? hour : existing.getHour());
+        if (restaurantRequestDto != null) {
+            request.setOwnerId(restaurantRequestDto.getOwnerId() != null ? restaurantRequestDto.getOwnerId() : existing.getOwnerId());
+            request.setName(restaurantRequestDto.getName() != null ? restaurantRequestDto.getName() : existing.getName());
+            request.setDescription(restaurantRequestDto.getDescription() != null ? restaurantRequestDto.getDescription() : existing.getDescription());
+            request.setTheme(restaurantRequestDto.getTheme() != null ? restaurantRequestDto.getTheme() : existing.getTheme());
+            request.setLocations(restaurantRequestDto.getLocations() != null ? restaurantRequestDto.getLocations() : existing.getLocations());
+            request.setTags(restaurantRequestDto.getTags() != null ? restaurantRequestDto.getTags() : existing.getTags());
+            request.setPriceMin(restaurantRequestDto.getPriceMin() != null ? restaurantRequestDto.getPriceMin() : existing.getPriceMin());
+            request.setPriceMax(restaurantRequestDto.getPriceMax() != null ? restaurantRequestDto.getPriceMax() : existing.getPriceMax());
+        } else {
+            request.setOwnerId(existing.getOwnerId());
+            request.setName(existing.getName());
+            request.setDescription(existing.getDescription());
+            request.setTheme(existing.getTheme());
+            request.setLocations(existing.getLocations());
+            request.setTags(existing.getTags());
+            request.setPriceMin(existing.getPriceMin());
+            request.setPriceMax(existing.getPriceMax());
+        }
+
         request.setLogo(existing.getLogo());
         request.setMenu(existing.getMenu());
+
+        cleanupIfRemovedOrChanged(existing.getLogo(), request.getLogo());
+        cleanupIfRemovedOrChanged(existing.getMenu(), request.getMenu());
 
         if (logoFile != null && !logoFile.isEmpty()) {
             String contentType = logoFile.getContentType();
@@ -197,15 +176,75 @@ public class RestaurantServiceImpl implements RestaurantService {
         return updateFromDto(id, request);
     }
 
-    private Set<String> normalizeLocations(Set<String> locations) {
+    private Restaurant updateFromDto(String id, RestaurantRequestDto restaurantRequestDto) {
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + id + " not found"));
+
+        cleanupIfRemovedOrChanged(restaurant.getLogo(), restaurantRequestDto.getLogo());
+        cleanupIfRemovedOrChanged(restaurant.getMenu(), restaurantRequestDto.getMenu());
+
+        restaurant.setOwnerId(restaurantRequestDto.getOwnerId());
+        restaurant.setName(restaurantRequestDto.getName());
+        restaurant.setDescription(restaurantRequestDto.getDescription());
+        restaurant.setLogo(restaurantRequestDto.getLogo());
+        restaurant.setMenu(restaurantRequestDto.getMenu());
+        restaurant.setTheme(restaurantRequestDto.getTheme());
+        restaurant.setLocations(normalizeLocations(restaurantRequestDto.getLocations()));
+        restaurant.setTags(restaurantRequestDto.getTags());
+        restaurant.setPriceMin(restaurantRequestDto.getPriceMin());
+        restaurant.setPriceMax(restaurantRequestDto.getPriceMax());
+        return restaurantRepository.save(restaurant);
+    }
+
+    private List<Location> normalizeLocations(List<Location> locations) {
         if (locations == null) {
             return null;
         }
 
         return locations.stream()
-                .filter(location -> location != null && !location.trim().isEmpty())
-                .map(String::trim)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+                .filter(Objects::nonNull)
+                .map(this::normalizeLocation)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private Location normalizeLocation(Location location) {
+        if (!StringUtils.hasText(location.getAddress()) && !StringUtils.hasText(location.getPhone()) && location.getSchedules() == null) {
+            return null;
+        }
+
+        if (!StringUtils.hasText(location.getId())) {
+            location.setId(UUID.randomUUID().toString());
+        }
+
+        location.setAddress(trimToNull(location.getAddress()));
+        location.setPhone(trimToNull(location.getPhone()));
+        location.setSchedules(normalizeSchedules(location.getSchedules()));
+        return location;
+    }
+
+    private List<Schedule> normalizeSchedules(List<Schedule> schedules) {
+        if (schedules == null) {
+            return null;
+        }
+
+        return schedules.stream()
+                .filter(Objects::nonNull)
+                .map(this::normalizeSchedule)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private Schedule normalizeSchedule(Schedule schedule) {
+        if (schedule.getDays() != null) {
+            schedule.setDays(schedule.getDays().stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
+        }
+
+        schedule.setOpenTime(trimToNull(schedule.getOpenTime()));
+        schedule.setCloseTime(trimToNull(schedule.getCloseTime()));
+        return schedule;
     }
 
     private void cleanupIfRemovedOrChanged(String existingUrl, String newUrl) {
@@ -223,31 +262,41 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    private boolean isRestaurantOpen(String hourRange) {
-        if (hourRange == null || hourRange.isBlank() || !hourRange.contains("-")) {
+    private boolean isLocationOpen(Location location) {
+        if (location == null || location.getSchedules() == null || location.getSchedules().isEmpty()) {
             return false;
         }
 
-        String[] parts = hourRange.split("-");
-        if (parts.length != 2) {
+        ZoneId zoneId = ZoneId.of("America/Bogota");
+        DayOfWeek currentDay = LocalDate.now(zoneId).getDayOfWeek();
+        LocalTime now = LocalTime.now(zoneId);
+
+        return location.getSchedules().stream().anyMatch(schedule -> isScheduleOpen(schedule, currentDay, now));
+    }
+
+    private boolean isScheduleOpen(Schedule schedule, DayOfWeek currentDay, LocalTime now) {
+        if (schedule == null || schedule.isClosed() || schedule.getDays() == null || !schedule.getDays().contains(currentDay)) {
             return false;
         }
 
-        LocalTime start = parseHour(parts[0].trim());
-        LocalTime end = parseHour(parts[1].trim());
-        if (start == null || end == null) {
+        LocalTime openTime = parseHour(schedule.getOpenTime());
+        LocalTime closeTime = parseHour(schedule.getCloseTime());
+        if (openTime == null || closeTime == null) {
             return false;
         }
 
-        LocalTime now = LocalTime.now(ZoneId.of("America/Bogota"));
-        if (end.isAfter(start)) {
-            return !now.isBefore(start) && now.isBefore(end);
+        if (closeTime.isAfter(openTime)) {
+            return !now.isBefore(openTime) && now.isBefore(closeTime);
         }
 
-        return !now.isBefore(start) || now.isBefore(end);
+        return !now.isBefore(openTime) || now.isBefore(closeTime);
     }
 
     private LocalTime parseHour(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+
         List<DateTimeFormatter> formatters = List.of(
                 DateTimeFormatter.ofPattern("H:mm"),
                 DateTimeFormatter.ofPattern("HH:mm"),
@@ -264,5 +313,12 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
         return null;
     }
-}
 
+    private String trimToNull(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+
+        return value.trim();
+    }
+}

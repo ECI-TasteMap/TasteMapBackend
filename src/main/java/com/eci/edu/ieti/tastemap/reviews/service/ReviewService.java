@@ -13,6 +13,8 @@ public interface ReviewService {
     Review create(ReviewRequestDto reviewRequestDto);
     Optional<Review> findById(String id);
     List<Review> all();
+    List<Review> findByRestaurantId(String restaurantId);
+    List<Review> findByUserId(String userId);
     double averageByRestaurantId(String restaurantId);
     void deleteById(String id);
     Review update(String id, ReviewRequestDto reviewRequestDto);

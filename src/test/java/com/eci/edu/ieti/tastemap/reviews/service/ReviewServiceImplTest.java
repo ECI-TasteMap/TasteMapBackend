@@ -1,5 +1,7 @@
 package com.eci.edu.ieti.tastemap.reviews.service;
 
+import com.eci.edu.ieti.tastemap.restaurant.model.Location;
+import com.eci.edu.ieti.tastemap.restaurant.model.Schedule;
 import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
 import com.eci.edu.ieti.tastemap.restaurant.repository.RestaurantRepository;
 import com.eci.edu.ieti.tastemap.reviews.dto.ReviewRequestDto;
@@ -15,6 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +58,7 @@ class ReviewServiceImplTest {
         Review reviewBeforeSave = new Review(null, "user1", restaurantId, "Great!", 5);
         reviewBeforeSave.setId("1");
         
-        Restaurant restaurant = new Restaurant("restaurant1", "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North"), Set.of("Italian"), 10, 30, "9-5", 0.0);
+        Restaurant restaurant = buildRestaurant(restaurantId);
         
         when(reviewMapper.toReview(reviewRequestDto)).thenReturn(reviewBeforeSave);
         when(reviewRepository.save(reviewBeforeSave)).thenReturn(review);
@@ -91,6 +96,28 @@ class ReviewServiceImplTest {
     }
 
     @Test
+    void testFindByRestaurantId() {
+        when(reviewRepository.findByRestaurantId("restaurant1")).thenReturn(Collections.singletonList(review));
+
+        List<Review> reviews = reviewService.findByRestaurantId("restaurant1");
+
+        assertEquals(1, reviews.size());
+        assertEquals(review, reviews.get(0));
+        verify(reviewRepository, times(1)).findByRestaurantId("restaurant1");
+    }
+
+    @Test
+    void testFindByUserId() {
+        when(reviewRepository.findByUserId("user1")).thenReturn(Collections.singletonList(review));
+
+        List<Review> reviews = reviewService.findByUserId("user1");
+
+        assertEquals(1, reviews.size());
+        assertEquals(review, reviews.get(0));
+        verify(reviewRepository, times(1)).findByUserId("user1");
+    }
+
+    @Test
     void testAverageByRestaurantId() {
         List<Review> reviews = List.of(
                 new Review("1", "user1", "restaurant1", "Good", 5),
@@ -120,7 +147,7 @@ class ReviewServiceImplTest {
         String restaurantId = "restaurant1";
         review.setRestaurantId(restaurantId);
         
-        Restaurant restaurant = new Restaurant(restaurantId, "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North"), Set.of("Italian"), 10, 30, "9-5", 5.0);
+        Restaurant restaurant = buildRestaurant(restaurantId);
         
         when(reviewRepository.findById("1")).thenReturn(Optional.of(review));
         doNothing().when(reviewRepository).deleteById("1");
@@ -147,7 +174,7 @@ class ReviewServiceImplTest {
         String restaurantId = "restaurant1";
         review.setRestaurantId(restaurantId);
         
-        Restaurant restaurant = new Restaurant(restaurantId, "owner1", "Test Restaurant", "3001234567", "Description", "logo.png", "menu.pdf", "Theme", Set.of("North"), Set.of("Italian"), 10, 30, "9-5", 4.0);
+        Restaurant restaurant = buildRestaurant(restaurantId);
         
         when(reviewRepository.findById("1")).thenReturn(Optional.of(review));
         when(reviewRepository.save(review)).thenReturn(review);
@@ -168,6 +195,28 @@ class ReviewServiceImplTest {
 
         assertThrows(ReviewNotFoundException.class, () -> reviewService.update("1", reviewRequestDto));
         verify(reviewRepository, never()).save(any(Review.class));
+    }
+
+    private Restaurant buildRestaurant(String restaurantId) {
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(restaurantId);
+        restaurant.setOwnerId("owner1");
+        restaurant.setName("Test Restaurant");
+        restaurant.setDescription("Description");
+        restaurant.setLogo("logo.png");
+        restaurant.setMenu("menu.pdf");
+        restaurant.setTheme(List.of("Theme"));
+        restaurant.setLocations(List.of(buildLocation()));
+        restaurant.setTags(Set.of("Italian"));
+        restaurant.setPriceMin(10);
+        restaurant.setPriceMax(30);
+        return restaurant;
+    }
+
+    private Location buildLocation() {
+        DayOfWeek today = LocalDate.now(ZoneId.of("America/Bogota")).getDayOfWeek();
+        Schedule schedule = new Schedule(Set.of(today), "00:00", "23:59", false);
+        return new Location("loc-1", "North", "3001234567", 4.5, List.of(schedule));
     }
 }
 

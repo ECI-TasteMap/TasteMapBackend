@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Response DTO for restaurant open status lookups.
  */
@@ -12,5 +14,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RestaurantOpenStatusResponseDto {
     private String restaurantId;
-    private String openStatus;
+    private List<LocationOpenStatusResponseDto> locationStatuses;
 }
