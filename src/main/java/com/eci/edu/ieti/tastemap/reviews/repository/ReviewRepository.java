@@ -12,5 +12,6 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends MongoRepository<Review, String> {
 	List<Review> findByRestaurantId(String restaurantId);
+	List<Review> findByUserId(String userId);
 }
 

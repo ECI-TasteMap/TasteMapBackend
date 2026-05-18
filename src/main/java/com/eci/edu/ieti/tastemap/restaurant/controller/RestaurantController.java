@@ -1,5 +1,6 @@
 package com.eci.edu.ieti.tastemap.restaurant.controller;
 
+import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantRequestDto;
 import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantResponseDto;
 import com.eci.edu.ieti.tastemap.restaurant.dto.RestaurantOpenStatusResponseDto;
 import com.eci.edu.ieti.tastemap.restaurant.exception.RestaurantNotFoundException;
@@ -33,33 +34,11 @@ public class RestaurantController {
     
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RestaurantResponseDto> create(
-            @RequestParam String ownerId,
-            @RequestParam String name,
-            @RequestParam(required = false) String phone,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) String theme,
-            @RequestParam(required = false) List<String> locations,
-            @RequestParam(required = false) List<String> tags,
-            @RequestParam(required = false) Integer priceMin,
-            @RequestParam(required = false) Integer priceMax,
-            @RequestParam(required = false) String hour,
-            @RequestParam(value = "logo", required = false) org.springframework.web.multipart.MultipartFile logoFile,
-            @RequestParam(value = "menu", required = false) org.springframework.web.multipart.MultipartFile menuFile) {
+            @RequestPart("restaurant") RestaurantRequestDto restaurantRequestDto,
+            @RequestPart(value = "logo", required = false) org.springframework.web.multipart.MultipartFile logoFile,
+            @RequestPart(value = "menu", required = false) org.springframework.web.multipart.MultipartFile menuFile) {
 
-        Restaurant restaurant = restaurantService.create(
-                ownerId,
-                name,
-                phone,
-                description,
-                theme,
-                locations,
-                tags,
-                priceMin,
-                priceMax,
-                hour,
-                logoFile,
-                menuFile
-        );
+        Restaurant restaurant = restaurantService.create(restaurantRequestDto, logoFile, menuFile);
         RestaurantResponseDto restaurantResponseDto = enrichRestaurantResponseDto(restaurantMapper.toRestaurantResponseDto(restaurant));
         return ResponseEntity.created(URI.create("/api/v1/restaurants/" + restaurant.getId())).body(restaurantResponseDto);
     }
@@ -89,39 +68,16 @@ public class RestaurantController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RestaurantResponseDto> updateMultipart(
             @PathVariable String id,
-            @RequestParam(required = false) String ownerId,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String phone,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) String theme,
-            @RequestParam(required = false) List<String> locations,
-            @RequestParam(required = false) List<String> tags,
-            @RequestParam(required = false) Integer priceMin,
-            @RequestParam(required = false) Integer priceMax,
-            @RequestParam(required = false) String hour,
-            @RequestParam(value = "logo", required = false) MultipartFile logoFile,
-            @RequestParam(value = "menu", required = false) MultipartFile menuFile) {
-        Restaurant restaurant = restaurantService.update(
-                id,
-                ownerId,
-                name,
-                phone,
-                description,
-                theme,
-                locations,
-                tags,
-                priceMin,
-                priceMax,
-                hour,
-                logoFile,
-                menuFile
-        );
+            @RequestPart("restaurant") RestaurantRequestDto restaurantRequestDto,
+            @RequestPart(value = "logo", required = false) MultipartFile logoFile,
+            @RequestPart(value = "menu", required = false) MultipartFile menuFile) {
+        Restaurant restaurant = restaurantService.update(id, restaurantRequestDto, logoFile, menuFile);
         RestaurantResponseDto restaurantResponseDto = enrichRestaurantResponseDto(restaurantMapper.toRestaurantResponseDto(restaurant));
         return ResponseEntity.ok(restaurantResponseDto);
     }
 
     private RestaurantResponseDto enrichRestaurantResponseDto(RestaurantResponseDto dto) {
-        dto.setOpenStatus(restaurantService.getOpenStatus(dto.getHour()));
+        dto.setOpenStatus(restaurantService.getOpenStatus(dto.getLocations()));
         return dto;
     }
 
