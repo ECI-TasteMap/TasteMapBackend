@@ -18,7 +18,7 @@ public interface ReservationService {
      * @param reservationRequestDto the reservation data
      * @return the created reservation
      */
-    Reservation create(ReservationRequestDto reservationRequestDto);
+    Reservation create(ReservationRequestDto reservationRequestDto, String userId);
     
     /**
      * Find a reservation by ID.
@@ -83,4 +83,6 @@ public interface ReservationService {
      * @param id the reservation ID
      */
     void deleteById(String id);
+
+    List<Reservation> findByLocationId(String locationId);
 }

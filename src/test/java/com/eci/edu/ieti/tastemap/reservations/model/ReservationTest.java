@@ -20,15 +20,8 @@ class ReservationTest {
         LocalDateTime now = LocalDateTime.now();
 
         reservation = new Reservation(
-            "1",
-            "user1",
-            "restaurant1",
-            date,
-            time,
-            4,
-            "Window seat preferred",
-            now,
-            now
+            "1", "user1", "restaurant1", "location1",
+            date, time, 4, "Window seat preferred", now, now
         );
     }
 
@@ -38,12 +31,16 @@ class ReservationTest {
         assertEquals("1", reservation.getId());
         assertEquals("user1", reservation.getUserId());
         assertEquals("restaurant1", reservation.getRestaurantId());
+        assertEquals("location1", reservation.getLocationId());
         assertEquals(4, reservation.getNumberOfGuests());
         assertEquals("Window seat preferred", reservation.getSpecialRequests());
     }
 
     @Test
     void testReservationSettersAndGetters() {
+        reservation.setLocationId("location2");
+        assertEquals("location2", reservation.getLocationId());
+
         reservation.setNumberOfGuests(6);
         assertEquals(6, reservation.getNumberOfGuests());
 
@@ -66,19 +63,13 @@ class ReservationTest {
         LocalDateTime now = LocalDateTime.now();
 
         Reservation reservation2 = new Reservation(
-            "1",
-            "user1",
-            "restaurant1",
-            date,
-            time,
-            4,
-            "Window seat preferred",
-            now,
-            now
+            "1", "user1", "restaurant1", "location1",
+            date, time, 4, "Window seat preferred", now, now
         );
 
         assertEquals(reservation.getId(), reservation2.getId());
         assertEquals(reservation.getUserId(), reservation2.getUserId());
+        assertEquals(reservation.getLocationId(), reservation2.getLocationId());
     }
 
     @Test
@@ -88,24 +79,17 @@ class ReservationTest {
         LocalDateTime now = LocalDateTime.now();
 
         Reservation reservation2 = new Reservation(
-            "2",
-            "user2",
-            "restaurant2",
-            date,
-            time,
-            2,
-            null,
-            now,
-            now
+            "2", "user2", "restaurant2", "location2",
+            date, time, 2, null, now, now
         );
 
         assertNull(reservation2.getSpecialRequests());
+        assertEquals("location2", reservation2.getLocationId());
         assertEquals(2, reservation2.getNumberOfGuests());
     }
 
     @Test
     void testReservationTimestamps() {
-        LocalDateTime now = LocalDateTime.now();
         assertNotNull(reservation.getCreatedAt());
         assertNotNull(reservation.getUpdatedAt());
         assertEquals(reservation.getCreatedAt(), reservation.getUpdatedAt());

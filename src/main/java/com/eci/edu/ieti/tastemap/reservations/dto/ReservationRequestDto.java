@@ -14,8 +14,8 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReservationRequestDto {
-    private String userId;
     private String restaurantId;
+    private String locationId;      
     private LocalDate date;
     private LocalTime time;
     private Integer numberOfGuests;

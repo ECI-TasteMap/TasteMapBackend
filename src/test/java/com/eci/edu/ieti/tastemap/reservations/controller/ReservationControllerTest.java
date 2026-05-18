@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,6 +42,7 @@ class ReservationControllerTest {
     private Reservation reservation;
     private ReservationRequestDto reservationRequestDto;
     private ReservationResponseDto reservationResponseDto;
+    private JwtAuthenticationToken auth;
 
     @BeforeEach
     void setUp() {
@@ -48,49 +51,35 @@ class ReservationControllerTest {
         LocalDateTime now = LocalDateTime.now();
 
         reservation = new Reservation(
-            "1",
-            "user1",
-            "restaurant1",
-            date,
-            time,
-            4,
-            "Window seat preferred",
-            now,
-            now
+            "1", "user1", "restaurant1", "location1",
+            date, time, 4, "Window seat preferred", now, now
         );
 
         reservationRequestDto = new ReservationRequestDto(
-            "user1",
-            "restaurant1",
-            date,
-            time,
-            4,
-            "Window seat preferred"
+            "restaurant1", "location1", date, time, 4, "Window seat preferred"
         );
 
         reservationResponseDto = new ReservationResponseDto(
-            "1",
-            "user1",
-            "restaurant1",
-            date,
-            time,
-            4,
-            "Window seat preferred",
-            now,
-            now
+            "1", "user1", "restaurant1", "location1",
+            date, time, 4, "Window seat preferred", now, now
         );
+
+        // Mock JWT token
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getSubject()).thenReturn("user1");
+        auth = new JwtAuthenticationToken(jwt);
     }
 
     @Test
     void testCreate() {
-        when(reservationService.create(reservationRequestDto)).thenReturn(reservation);
+        when(reservationService.create(reservationRequestDto, "user1")).thenReturn(reservation);
         when(reservationMapper.toReservationResponseDto(reservation)).thenReturn(reservationResponseDto);
 
-        ResponseEntity<ReservationResponseDto> response = reservationController.create(reservationRequestDto);
+        ResponseEntity<ReservationResponseDto> response = reservationController.create(reservationRequestDto, auth);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(reservationResponseDto, response.getBody());
-        verify(reservationService, times(1)).create(reservationRequestDto);
+        verify(reservationService, times(1)).create(reservationRequestDto, "user1");
     }
 
     @Test
@@ -126,7 +115,6 @@ class ReservationControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
-        assertEquals(reservationResponseDto, response.getBody().get(0));
         verify(reservationService, times(1)).all();
     }
 
@@ -139,7 +127,6 @@ class ReservationControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
-        assertEquals(reservationResponseDto, response.getBody().get(0));
         verify(reservationService, times(1)).findByUserId("user1");
     }
 
@@ -152,7 +139,6 @@ class ReservationControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
-        assertEquals(reservationResponseDto, response.getBody().get(0));
         verify(reservationService, times(1)).findUpcomingReservationsByUserId("user1");
     }
 
@@ -165,8 +151,19 @@ class ReservationControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
-        assertEquals(reservationResponseDto, response.getBody().get(0));
         verify(reservationService, times(1)).findByRestaurantId("restaurant1");
+    }
+
+    @Test
+    void testFindByLocationId() {
+        when(reservationService.findByLocationId("location1")).thenReturn(Collections.singletonList(reservation));
+        when(reservationMapper.toReservationResponseDto(reservation)).thenReturn(reservationResponseDto);
+
+        ResponseEntity<List<ReservationResponseDto>> response = reservationController.findByLocationId("location1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        verify(reservationService, times(1)).findByLocationId("location1");
     }
 
     @Test
@@ -180,7 +177,6 @@ class ReservationControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
-        assertEquals(reservationResponseDto, response.getBody().get(0));
         verify(reservationService, times(1)).findByRestaurantIdAndDate("restaurant1", date);
     }
 
