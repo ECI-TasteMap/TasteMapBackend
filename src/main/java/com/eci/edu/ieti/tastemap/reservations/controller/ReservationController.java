@@ -165,6 +165,36 @@ public class ReservationController {
     }
 
     /**
+     * Mark a reservation as accepted by the restaurant.
+     */
+    @PutMapping("/{id}/accept")
+    public ResponseEntity<ReservationResponseDto> accept(@PathVariable String id) {
+        Reservation reservation = reservationService.acceptReservation(id);
+        ReservationResponseDto reservationResponseDto = reservationMapper.toReservationResponseDto(reservation);
+        return ResponseEntity.ok(reservationResponseDto);
+    }
+
+    /**
+     * Mark a reservation as denied by the restaurant.
+     */
+    @PutMapping("/{id}/deny")
+    public ResponseEntity<ReservationResponseDto> deny(@PathVariable String id) {
+        Reservation reservation = reservationService.denyReservation(id);
+        ReservationResponseDto reservationResponseDto = reservationMapper.toReservationResponseDto(reservation);
+        return ResponseEntity.ok(reservationResponseDto);
+    }
+
+    /**
+     * Cancel a reservation.
+     */
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<ReservationResponseDto> cancel(@PathVariable String id) {
+        Reservation reservation = reservationService.cancelReservation(id);
+        ReservationResponseDto reservationResponseDto = reservationMapper.toReservationResponseDto(reservation);
+        return ResponseEntity.ok(reservationResponseDto);
+    }
+
+    /**
      * Delete a reservation by ID.
      *
      * @param id the reservation ID
