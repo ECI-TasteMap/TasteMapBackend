@@ -22,9 +22,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementation of the ReservationService interface.
- */
 @Service
 public class ReservationServiceImpl implements ReservationService {
 
@@ -45,14 +42,14 @@ public class ReservationServiceImpl implements ReservationService {
                 .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + dto.getRestaurantId() + " not found"));
 
         boolean locationExists = restaurant.getLocations().stream()
-                .anyMatch(location -> location.getId().equals(dto.getLocationId()));
+                .anyMatch(location -> location.getId() != null && location.getId().equals(dto.getLocationId()));
 
         if (!locationExists) {
             throw new RestaurantNotFoundException("Location with id " + dto.getLocationId() + " not found in restaurant " + dto.getRestaurantId());
         }
 
         Reservation reservation = reservationMapper.toReservation(dto);
-        reservation.setUserId(userId); // viene del JWT
+        reservation.setUserId(userId);
         reservation.setRestaurantId(dto.getRestaurantId());
         reservation.setLocationId(dto.getLocationId());
         reservation.setCreatedAt(LocalDateTime.now());
@@ -67,7 +64,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + dto.getRestaurantId() + " not found"));
 
         boolean locationExists = restaurant.getLocations().stream()
-                .anyMatch(location -> location.getId().equals(dto.getLocationId()));
+                .anyMatch(location -> location.getId() != null && location.getId().equals(dto.getLocationId()));
 
         if (!locationExists) {
             throw new RestaurantNotFoundException("Location with id " + dto.getLocationId() + " not found in restaurant " + dto.getRestaurantId());
@@ -167,7 +164,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + dto.getRestaurantId() + " not found"));
 
         Location location = restaurant.getLocations().stream()
-                .filter(loc -> loc.getId().equals(dto.getLocationId()))
+                .filter(loc -> loc.getId() != null && loc.getId().equals(dto.getLocationId()))
                 .findFirst()
                 .orElseThrow(() -> new RestaurantNotFoundException("Location with id " + dto.getLocationId() + " not found in restaurant " + dto.getRestaurantId()));
 
