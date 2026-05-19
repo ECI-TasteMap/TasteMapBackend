@@ -19,7 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,7 +36,7 @@ public class SecurityConfig {
     public JwtDecoder jwtDecoder() {
         try {
             var jwkSource = JWKSourceBuilder
-                    .create(new URL(jwkSetUri))
+                    .create(new URI(jwkSetUri).toURL())
                     .build();
 
             var jwtProcessor = new DefaultJWTProcessor<SecurityContext>();

@@ -22,32 +22,28 @@ public interface ReservationRepository extends MongoRepository<Reservation, Stri
     List<Reservation> findByUserId(String userId);
 
     /**
-     * Find all reservations for a specific restaurant.
+     * Find all reservations for a specific location.
      *
-     * @param restaurantId the ID of the restaurant
-     * @return a list of reservations for the restaurant
+     * @param locationId the ID of the location
+     * @return a list of reservations for the location
      */
-    List<Reservation> findByRestaurantId(String restaurantId);
+    List<Reservation> findByLocationId(String locationId);
 
     /**
-     * Find all reservations for a specific restaurant on a specific date.
+     * Find all reservations for a specific location on a specific date.
      *
-     * @param restaurantId the ID of the restaurant
-     * @param date         the date of the reservations
-     * @return a list of reservations for the restaurant on the given date
+     * @param locationId the ID of the location
+     * @param date the date of the reservations
+     * @return a list of reservations for the location on the given date
      */
-    List<Reservation> findByRestaurantIdAndDate(String restaurantId, LocalDate date);
+    List<Reservation> findByLocationIdAndDate(String locationId, LocalDate date);
 
     /**
      * Find all reservations for a specific user on a specific date or later.
      *
      * @param userId the ID of the user
-     * @param date   the date to filter from
+     * @param date the date to filter from
      * @return a list of upcoming reservations for the user
      */
     List<Reservation> findByUserIdAndDateGreaterThanEqual(String userId, LocalDate date);
-
-    List<Reservation> findByLocationId(String locationId);
-
-    List<Reservation> findByRestaurantIdAndLocationId(String restaurantId, String locationId);
 }

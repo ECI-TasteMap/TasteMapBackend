@@ -112,13 +112,13 @@ class ReservationServiceImplTest {
 
     @Test
     void testFindByRestaurantId() {
-        when(reservationRepository.findByRestaurantId("restaurant1")).thenReturn(Collections.singletonList(reservation));
+        when(reservationRepository.findByLocationId("restaurant1")).thenReturn(Collections.singletonList(reservation));
 
         List<Reservation> reservations = reservationService.findByRestaurantId("restaurant1");
 
         assertEquals(1, reservations.size());
         assertEquals(reservation, reservations.get(0));
-        verify(reservationRepository, times(1)).findByRestaurantId("restaurant1");
+        verify(reservationRepository, times(1)).findByLocationId("restaurant1");
     }
 
     @Test
@@ -135,14 +135,14 @@ class ReservationServiceImplTest {
     @Test
     void testFindByRestaurantIdAndDate() {
         LocalDate date = LocalDate.of(2026, 5, 20);
-        when(reservationRepository.findByRestaurantIdAndDate("restaurant1", date))
+        when(reservationRepository.findByLocationIdAndDate("restaurant1", date))
             .thenReturn(Collections.singletonList(reservation));
 
         List<Reservation> reservations = reservationService.findByRestaurantIdAndDate("restaurant1", date);
 
         assertEquals(1, reservations.size());
         assertEquals(reservation, reservations.get(0));
-        verify(reservationRepository, times(1)).findByRestaurantIdAndDate("restaurant1", date);
+        verify(reservationRepository, times(1)).findByLocationIdAndDate("restaurant1", date);
     }
 
     @Test
