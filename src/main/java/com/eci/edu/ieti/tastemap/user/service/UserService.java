@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface UserService {
     User create(UserRequestDto userRequestDto);
     Optional<User> findById(String id);
+    Optional<User> findBySupabaseId(String supabaseId);
     List<User> all();
     void deleteById(String id);
     User update(String id, UserRequestDto userRequestDto);

@@ -18,4 +18,3 @@ public interface UserMapper {
 
     UserResponseDto toUserResponseDto(User user);
 }
-

@@ -12,7 +12,7 @@ import java.util.List;
  */
 @Repository
 public interface ReservationRepository extends MongoRepository<Reservation, String> {
-    
+
     /**
      * Find all reservations for a specific user.
      *
@@ -20,7 +20,7 @@ public interface ReservationRepository extends MongoRepository<Reservation, Stri
      * @return a list of reservations for the user
      */
     List<Reservation> findByUserId(String userId);
-    
+
     /**
      * Find all reservations for a specific restaurant.
      *
@@ -28,22 +28,26 @@ public interface ReservationRepository extends MongoRepository<Reservation, Stri
      * @return a list of reservations for the restaurant
      */
     List<Reservation> findByRestaurantId(String restaurantId);
-    
+
     /**
      * Find all reservations for a specific restaurant on a specific date.
      *
      * @param restaurantId the ID of the restaurant
-     * @param date the date of the reservations
+     * @param date         the date of the reservations
      * @return a list of reservations for the restaurant on the given date
      */
     List<Reservation> findByRestaurantIdAndDate(String restaurantId, LocalDate date);
-    
+
     /**
      * Find all reservations for a specific user on a specific date or later.
      *
      * @param userId the ID of the user
-     * @param date the date to filter from
+     * @param date   the date to filter from
      * @return a list of upcoming reservations for the user
      */
     List<Reservation> findByUserIdAndDateGreaterThanEqual(String userId, LocalDate date);
+
+    List<Reservation> findByLocationId(String locationId);
+
+    List<Reservation> findByRestaurantIdAndLocationId(String restaurantId, String locationId);
 }

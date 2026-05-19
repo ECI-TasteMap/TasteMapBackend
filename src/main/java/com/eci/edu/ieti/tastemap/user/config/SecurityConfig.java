@@ -56,22 +56,30 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/users").permitAll()
+                        // Public — registration endpoint (no session exists yet)
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                        // Public — API docs
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/ai/history").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/ai/history").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/*/chat").authenticated()
+                        // Users
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users", "/api/v1/users/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").authenticated()
+                        // Restaurants
                         .requestMatchers(HttpMethod.GET, "/api/v1/restaurants", "/api/v1/restaurants/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/reviews", "/api/v1/reviews/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/restaurants").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/restaurants/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/restaurants/**").authenticated()
+                        // Reviews
+                        .requestMatchers(HttpMethod.GET, "/api/v1/reviews", "/api/v1/reviews/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/reviews").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/reviews/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/reviews/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").authenticated()
+                        // AI / Chat
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/*/chat").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/ai/history").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/ai/history").authenticated()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
 

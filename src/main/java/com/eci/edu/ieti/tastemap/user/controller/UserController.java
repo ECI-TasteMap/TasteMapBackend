@@ -10,6 +10,7 @@ import com.eci.edu.ieti.tastemap.user.model.User;
 import com.eci.edu.ieti.tastemap.user.service.ChatService;
 import com.eci.edu.ieti.tastemap.user.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -39,6 +40,18 @@ public class UserController {
         User user = userService.create(userRequestDto);
         UserResponseDto userResponseDto = userMapper.toUserResponseDto(user);
         return ResponseEntity.created(URI.create("/api/v1/users/" + user.getId())).body(userResponseDto);
+    }
+
+    /**
+     * Returns the profile of the currently authenticated user.
+     * Uses the Supabase UUID from the JWT subject claim to look up the user.
+     */
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> me(JwtAuthenticationToken auth) {
+        String supabaseId = auth.getToken().getSubject();
+        User user = userService.findBySupabaseId(supabaseId)
+                .orElseThrow(() -> new UserNotFoundException("User with supabaseId " + supabaseId + " not found"));
+        return ResponseEntity.ok(userMapper.toUserResponseDto(user));
     }
 
     @GetMapping("/{id}")

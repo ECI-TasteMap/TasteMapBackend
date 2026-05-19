@@ -45,24 +45,12 @@ class ReservationServiceImplTest {
         LocalDateTime now = LocalDateTime.now();
 
         reservation = new Reservation(
-            "1",
-            "user1",
-            "restaurant1",
-            date,
-            time,
-            4,
-            "Window seat preferred",
-            now,
-            now
+            "1", "user1","location1",
+            date, time, 4, "Window seat preferred", now, now
         );
 
         reservationRequestDto = new ReservationRequestDto(
-            "user1",
-            "restaurant1",
-            date,
-            time,
-            4,
-            "Window seat preferred"
+            "restaurant1", "location1", date, time, 4, "Window seat preferred"
         );
     }
 
@@ -71,11 +59,11 @@ class ReservationServiceImplTest {
         when(reservationMapper.toReservation(reservationRequestDto)).thenReturn(reservation);
         when(reservationRepository.save(any(Reservation.class))).thenReturn(reservation);
 
-        Reservation createdReservation = reservationService.create(reservationRequestDto);
+        Reservation createdReservation = reservationService.create(reservationRequestDto, "user1");
 
         assertNotNull(createdReservation);
-        assertEquals(reservation.getUserId(), createdReservation.getUserId());
-        assertEquals(reservation.getRestaurantId(), createdReservation.getRestaurantId());
+        assertEquals("user1", createdReservation.getUserId());
+        assertEquals("location1", createdReservation.getLocationId());
         verify(reservationRepository, times(1)).save(any(Reservation.class));
     }
 
@@ -134,6 +122,17 @@ class ReservationServiceImplTest {
     }
 
     @Test
+    void testFindByLocationId() {
+        when(reservationRepository.findByLocationId("location1")).thenReturn(Collections.singletonList(reservation));
+
+        List<Reservation> reservations = reservationService.findByLocationId("location1");
+
+        assertEquals(1, reservations.size());
+        assertEquals(reservation, reservations.get(0));
+        verify(reservationRepository, times(1)).findByLocationId("location1");
+    }
+
+    @Test
     void testFindByRestaurantIdAndDate() {
         LocalDate date = LocalDate.of(2026, 5, 20);
         when(reservationRepository.findByRestaurantIdAndDate("restaurant1", date))
@@ -166,7 +165,7 @@ class ReservationServiceImplTest {
         Reservation updatedReservation = reservationService.update("1", reservationRequestDto);
 
         assertNotNull(updatedReservation);
-        assertEquals(reservation.getUserId(), updatedReservation.getUserId());
+        assertEquals("location1", updatedReservation.getLocationId());
         verify(reservationRepository, times(1)).save(any(Reservation.class));
     }
 

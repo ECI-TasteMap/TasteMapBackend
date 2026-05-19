@@ -22,7 +22,7 @@ public class Reservation {
     @Id
     private String id;
     private String userId;
-    private String restaurantId;
+    private String locationId;      
     private LocalDate date;
     private LocalTime time;
     private Integer numberOfGuests;

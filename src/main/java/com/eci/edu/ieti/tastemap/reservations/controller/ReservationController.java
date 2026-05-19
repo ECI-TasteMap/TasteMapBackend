@@ -8,6 +8,7 @@ import com.eci.edu.ieti.tastemap.reservations.model.Reservation;
 import com.eci.edu.ieti.tastemap.reservations.service.ReservationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -21,15 +22,15 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/reservations")
 @CrossOrigin(origins = "*")
 public class ReservationController {
-    
+
     private final ReservationService reservationService;
     private final ReservationMapper reservationMapper;
-    
+
     public ReservationController(ReservationService reservationService, ReservationMapper reservationMapper) {
         this.reservationService = reservationService;
         this.reservationMapper = reservationMapper;
     }
-    
+
     /**
      * Create a new reservation.
      *
@@ -37,12 +38,15 @@ public class ReservationController {
      * @return the created reservation
      */
     @PostMapping
-    public ResponseEntity<ReservationResponseDto> create(@RequestBody ReservationRequestDto reservationRequestDto) {
-        Reservation reservation = reservationService.create(reservationRequestDto);
-        ReservationResponseDto reservationResponseDto = reservationMapper.toReservationResponseDto(reservation);
-        return ResponseEntity.created(URI.create("/api/v1/reservations/" + reservation.getId())).body(reservationResponseDto);
+    public ResponseEntity<ReservationResponseDto> create(
+            @RequestBody ReservationRequestDto dto,
+            JwtAuthenticationToken auth) {
+        String userId = auth.getToken().getSubject();
+        Reservation reservation = reservationService.create(dto, userId);
+        ReservationResponseDto response = reservationMapper.toReservationResponseDto(reservation);
+        return ResponseEntity.created(URI.create("/api/v1/reservations/" + reservation.getId())).body(response);
     }
-    
+
     /**
      * Get a reservation by ID.
      *
@@ -56,7 +60,16 @@ public class ReservationController {
         ReservationResponseDto reservationResponseDto = reservationMapper.toReservationResponseDto(reservation);
         return ResponseEntity.ok(reservationResponseDto);
     }
-    
+
+    @GetMapping("/location/{locationId}")
+    public ResponseEntity<List<ReservationResponseDto>> findByLocationId(@PathVariable String locationId) {
+        List<Reservation> reservations = reservationService.findByLocationId(locationId);
+        List<ReservationResponseDto> response = reservations.stream()
+                .map(reservationMapper::toReservationResponseDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
     /**
      * Get all reservations.
      *
@@ -70,7 +83,7 @@ public class ReservationController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(reservationResponseDtos);
     }
-    
+
     /**
      * Get all reservations for a specific user.
      *
@@ -85,7 +98,7 @@ public class ReservationController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(reservationResponseDtos);
     }
-    
+
     /**
      * Get all upcoming reservations for a specific user.
      *
@@ -100,7 +113,7 @@ public class ReservationController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(reservationResponseDtos);
     }
-    
+
     /**
      * Get all reservations for a specific restaurant.
      *
@@ -115,12 +128,12 @@ public class ReservationController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(reservationResponseDtos);
     }
-    
+
     /**
      * Get all reservations for a specific restaurant on a specific date.
      *
      * @param restaurantId the restaurant ID
-     * @param date the date in YYYY-MM-DD format
+     * @param date         the date in YYYY-MM-DD format
      * @return a list of reservations for the restaurant on the given date
      */
     @GetMapping("/restaurant/{restaurantId}/date/{date}")
@@ -134,11 +147,11 @@ public class ReservationController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(reservationResponseDtos);
     }
-    
+
     /**
      * Update an existing reservation.
      *
-     * @param id the reservation ID
+     * @param id                    the reservation ID
      * @param reservationRequestDto the updated reservation data
      * @return the updated reservation
      */
@@ -150,7 +163,7 @@ public class ReservationController {
         ReservationResponseDto reservationResponseDto = reservationMapper.toReservationResponseDto(reservation);
         return ResponseEntity.ok(reservationResponseDto);
     }
-    
+
     /**
      * Delete a reservation by ID.
      *

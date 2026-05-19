@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserResponseDto {
     private String id;
+    private String supabaseId;
     private String fullname;
     private String email;
     private Role role;
