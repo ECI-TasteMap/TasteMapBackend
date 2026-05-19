@@ -45,7 +45,7 @@ class ReservationServiceImplTest {
         LocalDateTime now = LocalDateTime.now();
 
         reservation = new Reservation(
-            "1", "user1", "restaurant1", "location1",
+            "1", "user1","location1",
             date, time, 4, "Window seat preferred", now, now
         );
 
@@ -64,7 +64,6 @@ class ReservationServiceImplTest {
         assertNotNull(createdReservation);
         assertEquals("user1", createdReservation.getUserId());
         assertEquals("location1", createdReservation.getLocationId());
-        assertEquals("restaurant1", createdReservation.getRestaurantId());
         verify(reservationRepository, times(1)).save(any(Reservation.class));
     }
 

@@ -42,8 +42,7 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ReservationNotFoundException("Reservation with id " + id + " not found"));
 
-        reservation.setRestaurantId(dto.getRestaurantId());
-        reservation.setLocationId(dto.getLocationId()); // ← NUEVO
+        reservation.setLocationId(dto.getLocationId()); 
         reservation.setDate(dto.getDate());
         reservation.setTime(dto.getTime());
         reservation.setNumberOfGuests(dto.getNumberOfGuests());

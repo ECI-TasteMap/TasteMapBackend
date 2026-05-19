@@ -51,7 +51,7 @@ class ReservationControllerTest {
         LocalDateTime now = LocalDateTime.now();
 
         reservation = new Reservation(
-            "1", "user1", "restaurant1", "location1",
+            "1", "user1", "location1",
             date, time, 4, "Window seat preferred", now, now
         );
 
