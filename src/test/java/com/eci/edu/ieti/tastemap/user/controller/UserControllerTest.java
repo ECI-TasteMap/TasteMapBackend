@@ -48,9 +48,9 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        user = new User("1", "Test User", "password", "test@test.com", Role.USER);
-        userRequestDto = new UserRequestDto("Test User", "password", "test@test.com", Role.USER);
-        userResponseDto = new UserResponseDto("1", "Test User", "test@test.com", Role.USER);
+        user = new User("1", "supabase-123", "Test User", "password", "test@test.com", Role.USER);
+        userRequestDto = new UserRequestDto("supabase-123", "Test User", "password", "test@test.com", Role.USER);
+        userResponseDto = new UserResponseDto("1", "supabase-123", "Test User", "test@test.com", Role.USER);
         chatRequestDto = new ChatRequestDto("Hola", List.of());
         chatResponseDto = ChatResponseDto.builder().success(true).response("Respuesta").userId("1").build();
     }

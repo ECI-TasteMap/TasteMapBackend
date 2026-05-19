@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserRequestDto {
+    private String supabaseId;
     private String fullname;
     private String password;
     private String email;

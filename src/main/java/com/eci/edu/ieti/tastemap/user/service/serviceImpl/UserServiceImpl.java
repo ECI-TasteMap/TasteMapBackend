@@ -41,6 +41,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<User> findBySupabaseId(String supabaseId) {
+        return userRepository.findBySupabaseId(supabaseId);
+    }
+
+    @Override
     public List<User> all() {
         return userRepository.findAll();
     }
@@ -55,7 +60,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User update(String id, UserRequestDto userRequestDto) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
         user.setFullname(userRequestDto.getFullname());
         user.setEmail(userRequestDto.getEmail());
         if (userRequestDto.getPassword() != null && !userRequestDto.getPassword().isEmpty()) {
@@ -65,4 +71,3 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 }
-

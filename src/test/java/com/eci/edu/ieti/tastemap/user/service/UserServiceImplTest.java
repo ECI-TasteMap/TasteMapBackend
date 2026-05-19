@@ -42,8 +42,8 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        user = new User("1", "Test User", "encodedPassword", "test@test.com", Role.USER);
-        userRequestDto = new UserRequestDto("Test User", "password", "test@test.com", Role.USER);
+        user = new User("1", "supabase-123", "Test User", "encodedPassword", "test@test.com", Role.USER);
+        userRequestDto = new UserRequestDto("supabase-123", "Test User", "password", "test@test.com", Role.USER);
     }
 
     @Test

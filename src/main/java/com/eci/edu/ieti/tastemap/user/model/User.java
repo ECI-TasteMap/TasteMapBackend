@@ -17,6 +17,7 @@ public class User {
 
     @Id
     private String id;
+    private String supabaseId;
     private String fullname;
     private String passwordHash;
     private String email;
