@@ -48,18 +48,21 @@ class ReviewServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        review = new Review("1", "user1", "restaurant1", "Great!", 5);
-        reviewRequestDto = new ReviewRequestDto("user1", "restaurant1", "Great!", 5);
+        review = new Review("1", "user1", "restaurant1", "location1", "Great!", 5);
+        reviewRequestDto = new ReviewRequestDto("user1", "restaurant1", "location1", "Great!", 5);
     }
 
     @Test
     void testCreate() {
         String restaurantId = "restaurant1";
-        Review reviewBeforeSave = new Review(null, "user1", restaurantId, "Great!", 5);
+        String locationId = "location1";
+        Review reviewBeforeSave = new Review(null, "user1", restaurantId, locationId, "Great!", 5);
         reviewBeforeSave.setId("1");
         
         Restaurant restaurant = buildRestaurant(restaurantId);
-        
+        restaurant.getLocations().get(0).setId(locationId);
+
+        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
         when(reviewMapper.toReview(reviewRequestDto)).thenReturn(reviewBeforeSave);
         when(reviewRepository.save(reviewBeforeSave)).thenReturn(review);
         when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
@@ -118,11 +121,22 @@ class ReviewServiceImplTest {
     }
 
     @Test
+    void testFindByLocationId() {
+        when(reviewRepository.findByLocationId("location1")).thenReturn(Collections.singletonList(review));
+
+        List<Review> reviews = reviewService.findByLocationId("location1");
+
+        assertEquals(1, reviews.size());
+        assertEquals(review, reviews.get(0));
+        verify(reviewRepository, times(1)).findByLocationId("location1");
+    }
+
+    @Test
     void testAverageByRestaurantId() {
         List<Review> reviews = List.of(
-                new Review("1", "user1", "restaurant1", "Good", 5),
-                new Review("2", "user2", "restaurant1", "Ok", 3),
-                new Review("3", "user3", "restaurant1", "Great", 4)
+                new Review("1", "user1", "restaurant1", "location1", "Good", 5),
+                new Review("2", "user2", "restaurant1", "location1", "Ok", 3),
+                new Review("3", "user3", "restaurant1", "location1", "Great", 4)
         );
         when(reviewRepository.findByRestaurantId("restaurant1")).thenReturn(reviews);
 
@@ -219,4 +233,3 @@ class ReviewServiceImplTest {
         return new Location("loc-1", "North", "3001234567", 4.5, List.of(schedule));
     }
 }
-

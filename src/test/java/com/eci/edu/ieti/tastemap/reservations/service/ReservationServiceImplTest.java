@@ -6,6 +6,10 @@ import com.eci.edu.ieti.tastemap.reservations.mapper.ReservationMapper;
 import com.eci.edu.ieti.tastemap.reservations.model.Reservation;
 import com.eci.edu.ieti.tastemap.reservations.repository.ReservationRepository;
 import com.eci.edu.ieti.tastemap.reservations.service.serviceImpl.ReservationServiceImpl;
+import com.eci.edu.ieti.tastemap.restaurant.model.Location;
+import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
+import com.eci.edu.ieti.tastemap.restaurant.model.Schedule;
+import com.eci.edu.ieti.tastemap.restaurant.repository.RestaurantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,12 +17,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -32,11 +39,15 @@ class ReservationServiceImplTest {
     @Mock
     private ReservationMapper reservationMapper;
 
+    @Mock
+    private RestaurantRepository restaurantRepository;
+
     @InjectMocks
     private ReservationServiceImpl reservationService;
 
     private Reservation reservation;
     private ReservationRequestDto reservationRequestDto;
+    private Restaurant restaurant;
 
     @BeforeEach
     void setUp() {
@@ -45,17 +56,31 @@ class ReservationServiceImplTest {
         LocalDateTime now = LocalDateTime.now();
 
         reservation = new Reservation(
-            "1", "user1","location1",
+            "1", "user1", "restaurant1", "location1",
             date, time, 4, "Window seat preferred", now, now
         );
 
         reservationRequestDto = new ReservationRequestDto(
             "restaurant1", "location1", date, time, 4, "Window seat preferred"
         );
+
+        restaurant = new Restaurant();
+        restaurant.setId("restaurant1");
+        Location location = new Location();
+        location.setId("location1");
+        Schedule schedule = new Schedule();
+        Set<DayOfWeek> days = new HashSet<>();
+        days.add(date.getDayOfWeek());
+        schedule.setDays(days);
+        schedule.setOpenTime("10:00");
+        schedule.setCloseTime("22:00");
+        location.setSchedules(Collections.singletonList(schedule));
+        restaurant.setLocations(Collections.singletonList(location));
     }
 
     @Test
     void testCreate() {
+        when(restaurantRepository.findById("restaurant1")).thenReturn(Optional.of(restaurant));
         when(reservationMapper.toReservation(reservationRequestDto)).thenReturn(reservation);
         when(reservationRepository.save(any(Reservation.class))).thenReturn(reservation);
 
@@ -63,6 +88,7 @@ class ReservationServiceImplTest {
 
         assertNotNull(createdReservation);
         assertEquals("user1", createdReservation.getUserId());
+        assertEquals("restaurant1", createdReservation.getRestaurantId());
         assertEquals("location1", createdReservation.getLocationId());
         verify(reservationRepository, times(1)).save(any(Reservation.class));
     }
@@ -112,13 +138,13 @@ class ReservationServiceImplTest {
 
     @Test
     void testFindByRestaurantId() {
-        when(reservationRepository.findByLocationId("restaurant1")).thenReturn(Collections.singletonList(reservation));
+        when(reservationRepository.findByRestaurantId("restaurant1")).thenReturn(Collections.singletonList(reservation));
 
         List<Reservation> reservations = reservationService.findByRestaurantId("restaurant1");
 
         assertEquals(1, reservations.size());
         assertEquals(reservation, reservations.get(0));
-        verify(reservationRepository, times(1)).findByLocationId("restaurant1");
+        verify(reservationRepository, times(1)).findByRestaurantId("restaurant1");
     }
 
     @Test
@@ -159,21 +185,33 @@ class ReservationServiceImplTest {
 
     @Test
     void testUpdate() {
+        when(restaurantRepository.findById("restaurant1")).thenReturn(Optional.of(restaurant));
         when(reservationRepository.findById("1")).thenReturn(Optional.of(reservation));
         when(reservationRepository.save(reservation)).thenReturn(reservation);
 
         Reservation updatedReservation = reservationService.update("1", reservationRequestDto);
 
         assertNotNull(updatedReservation);
+        assertEquals("restaurant1", updatedReservation.getRestaurantId());
         assertEquals("location1", updatedReservation.getLocationId());
         verify(reservationRepository, times(1)).save(any(Reservation.class));
     }
 
     @Test
-    void testUpdateNotFound() {
+    void testUpdateReservationNotFound() {
+
+        when(restaurantRepository.findById("restaurant1")).thenReturn(Optional.of(restaurant));
         when(reservationRepository.findById("1")).thenReturn(Optional.empty());
 
         assertThrows(ReservationNotFoundException.class, () -> reservationService.update("1", reservationRequestDto));
+        verify(reservationRepository, never()).save(any(Reservation.class));
+    }
+
+    @Test
+    void testUpdateRestaurantNotFound() {
+        when(restaurantRepository.findById("restaurant1")).thenReturn(Optional.empty());
+
+        assertThrows(com.eci.edu.ieti.tastemap.restaurant.exception.RestaurantNotFoundException.class, () -> reservationService.update("1", reservationRequestDto));
         verify(reservationRepository, never()).save(any(Reservation.class));
     }
 

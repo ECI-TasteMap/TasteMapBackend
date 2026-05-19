@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class ReviewRequestDto {
     private String userId;
     private String restaurantId;
+    private String locationId;
     private String comment;
     private int stars;
 }
-

@@ -40,9 +40,9 @@ class ReviewControllerTest {
 
     @BeforeEach
     void setUp() {
-        review = new Review("1", "user1", "restaurant1", "Great!", 5);
-        reviewRequestDto = new ReviewRequestDto("user1", "restaurant1", "Great!", 5);
-        reviewResponseDto = new ReviewResponseDto("1", "user1", "restaurant1", "Great!", 5);
+        review = new Review("1", "user1", "restaurant1", "location1", "Great!", 5);
+        reviewRequestDto = new ReviewRequestDto("user1", "restaurant1", "location1", "Great!", 5);
+        reviewResponseDto = new ReviewResponseDto("1", "user1", "restaurant1", "location1", "Great!", 5);
     }
 
     @Test
@@ -109,6 +109,19 @@ class ReviewControllerTest {
     }
 
     @Test
+    void testFindByLocationId() {
+        when(reviewService.findByLocationId("location1")).thenReturn(Collections.singletonList(review));
+        when(reviewMapper.toReviewResponseDto(review)).thenReturn(reviewResponseDto);
+
+        ResponseEntity<List<ReviewResponseDto>> response = reviewController.findByLocationId("location1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        assertEquals(reviewResponseDto, response.getBody().get(0));
+        verify(reviewService, times(1)).findByLocationId("location1");
+    }
+
+    @Test
     void testAverageByRestaurantId() {
         when(reviewService.averageByRestaurantId("restaurant1")).thenReturn(4.0);
 
@@ -142,4 +155,3 @@ class ReviewControllerTest {
         verify(reviewService, times(1)).deleteById("1");
     }
 }
-

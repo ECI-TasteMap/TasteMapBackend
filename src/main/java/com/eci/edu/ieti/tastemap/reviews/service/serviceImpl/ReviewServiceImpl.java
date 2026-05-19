@@ -6,6 +6,7 @@ import com.eci.edu.ieti.tastemap.reviews.mapper.ReviewMapper;
 import com.eci.edu.ieti.tastemap.reviews.model.Review;
 import com.eci.edu.ieti.tastemap.reviews.repository.ReviewRepository;
 import com.eci.edu.ieti.tastemap.reviews.service.ReviewService;
+import com.eci.edu.ieti.tastemap.restaurant.exception.RestaurantNotFoundException;
 import com.eci.edu.ieti.tastemap.restaurant.model.Location;
 import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
 import com.eci.edu.ieti.tastemap.restaurant.repository.RestaurantRepository;
@@ -32,6 +33,16 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public Review create(ReviewRequestDto reviewRequestDto) {
+        Restaurant restaurant = restaurantRepository.findById(reviewRequestDto.getRestaurantId())
+                .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + reviewRequestDto.getRestaurantId() + " not found"));
+
+        boolean locationExists = restaurant.getLocations().stream()
+                .anyMatch(location -> location.getId().equals(reviewRequestDto.getLocationId()));
+
+        if (!locationExists) {
+            throw new RestaurantNotFoundException("Location with id " + reviewRequestDto.getLocationId() + " not found in restaurant " + reviewRequestDto.getRestaurantId());
+        }
+
         Review review = reviewMapper.toReview(reviewRequestDto);
         Review savedReview = reviewRepository.save(review);
         refreshRestaurantAverage(savedReview.getRestaurantId());
@@ -56,6 +67,11 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<Review> findByUserId(String userId) {
         return reviewRepository.findByUserId(userId);
+    }
+
+    @Override
+    public List<Review> findByLocationId(String locationId) {
+        return reviewRepository.findByLocationId(locationId);
     }
 
     @Override
@@ -86,6 +102,7 @@ public class ReviewServiceImpl implements ReviewService {
         String previousRestaurantId = review.getRestaurantId();
         review.setUserId(reviewRequestDto.getUserId());
         review.setRestaurantId(reviewRequestDto.getRestaurantId());
+        review.setLocationId(reviewRequestDto.getLocationId());
         review.setComment(reviewRequestDto.getComment());
         review.setStars(reviewRequestDto.getStars());
 
@@ -120,4 +137,3 @@ public class ReviewServiceImpl implements ReviewService {
         restaurantRepository.save(restaurant);
     }
 }
-

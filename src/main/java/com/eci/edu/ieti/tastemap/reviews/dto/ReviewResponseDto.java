@@ -14,7 +14,7 @@ public class ReviewResponseDto {
     private String id;
     private String userId;
     private String restaurantId;
+    private String locationId;
     private String comment;
     private int stars;
 }
-

@@ -15,8 +15,8 @@ public interface ReviewService {
     List<Review> all();
     List<Review> findByRestaurantId(String restaurantId);
     List<Review> findByUserId(String userId);
+    List<Review> findByLocationId(String locationId);
     double averageByRestaurantId(String restaurantId);
     void deleteById(String id);
     Review update(String id, ReviewRequestDto reviewRequestDto);
 }
-

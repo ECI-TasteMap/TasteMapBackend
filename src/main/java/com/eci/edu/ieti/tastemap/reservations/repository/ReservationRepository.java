@@ -22,6 +22,14 @@ public interface ReservationRepository extends MongoRepository<Reservation, Stri
     List<Reservation> findByUserId(String userId);
 
     /**
+     * Find all reservations for a specific restaurant.
+     *
+     * @param restaurantId the ID of the restaurant
+     * @return a list of reservations for the restaurant
+     */
+    List<Reservation> findByRestaurantId(String restaurantId);
+
+    /**
      * Find all reservations for a specific location.
      *
      * @param locationId the ID of the location

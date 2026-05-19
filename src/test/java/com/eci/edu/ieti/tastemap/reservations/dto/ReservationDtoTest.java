@@ -56,13 +56,14 @@ class ReservationDtoTest {
     @Test
     void testReservationResponseDtoCreation() {
         ReservationResponseDto responseDto = new ReservationResponseDto(
-            "1", "user1", "location1",
+            "1", "user1", "restaurant1", "location1",
             date, time, 4, "Window seat preferred", now, now
         );
 
         assertNotNull(responseDto);
         assertEquals("1", responseDto.getId());
         assertEquals("user1", responseDto.getUserId());
+        assertEquals("restaurant1", responseDto.getRestaurantId());
         assertEquals("location1", responseDto.getLocationId());
         assertEquals(date, responseDto.getDate());
         assertEquals(time, responseDto.getTime());
@@ -77,6 +78,7 @@ class ReservationDtoTest {
         ReservationResponseDto responseDto = new ReservationResponseDto();
         responseDto.setId("2");
         responseDto.setUserId("user2");
+        responseDto.setRestaurantId("restaurant2");
         responseDto.setLocationId("location2");
         responseDto.setDate(date);
         responseDto.setTime(time);
@@ -87,6 +89,7 @@ class ReservationDtoTest {
 
         assertEquals("2", responseDto.getId());
         assertEquals("user2", responseDto.getUserId());
+        assertEquals("restaurant2", responseDto.getRestaurantId());
         assertEquals("location2", responseDto.getLocationId());
         assertEquals(6, responseDto.getNumberOfGuests());
         assertEquals("Vegetarian options", responseDto.getSpecialRequests());
@@ -107,11 +110,12 @@ class ReservationDtoTest {
     @Test
     void testReservationResponseDtoWithNullSpecialRequests() {
         ReservationResponseDto responseDto = new ReservationResponseDto(
-            "3", "user3", "location3",
+            "3", "user3", "restaurant1", "location3",
             date, time, 3, null, now, now
         );
 
         assertNull(responseDto.getSpecialRequests());
+        assertEquals("restaurant1", responseDto.getRestaurantId());
         assertEquals("location3", responseDto.getLocationId());
         assertEquals(3, responseDto.getNumberOfGuests());
         assertEquals("user3", responseDto.getUserId());
