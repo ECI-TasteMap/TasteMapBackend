@@ -69,12 +69,12 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<Reservation> findByRestaurantId(String restaurantId) {
-        return reservationRepository.findByRestaurantId(restaurantId);
+        return reservationRepository.findByLocationId(restaurantId);
     }
 
     @Override
     public List<Reservation> findByRestaurantIdAndDate(String restaurantId, LocalDate date) {
-        return reservationRepository.findByRestaurantIdAndDate(restaurantId, date);
+        return reservationRepository.findByLocationIdAndDate(restaurantId, date);
     }
 
     @Override

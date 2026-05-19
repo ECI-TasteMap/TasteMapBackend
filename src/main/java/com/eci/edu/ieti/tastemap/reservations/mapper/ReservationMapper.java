@@ -13,6 +13,7 @@ import org.mapstruct.Mapping;
 public interface ReservationMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     Reservation toReservation(ReservationRequestDto reservationRequestDto);
