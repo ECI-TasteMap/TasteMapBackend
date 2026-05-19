@@ -6,6 +6,9 @@ import com.eci.edu.ieti.tastemap.reservations.mapper.ReservationMapper;
 import com.eci.edu.ieti.tastemap.reservations.model.Reservation;
 import com.eci.edu.ieti.tastemap.reservations.repository.ReservationRepository;
 import com.eci.edu.ieti.tastemap.reservations.service.ReservationService;
+import com.eci.edu.ieti.tastemap.restaurant.exception.RestaurantNotFoundException;
+import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
+import com.eci.edu.ieti.tastemap.restaurant.repository.RestaurantRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,16 +24,29 @@ public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final ReservationMapper reservationMapper;
+    private final RestaurantRepository restaurantRepository;
 
-    public ReservationServiceImpl(ReservationRepository reservationRepository, ReservationMapper reservationMapper) {
+    public ReservationServiceImpl(ReservationRepository reservationRepository, ReservationMapper reservationMapper, RestaurantRepository restaurantRepository) {
         this.reservationRepository = reservationRepository;
         this.reservationMapper = reservationMapper;
+        this.restaurantRepository = restaurantRepository;
     }
 
     @Override
     public Reservation create(ReservationRequestDto dto, String userId) {
+        Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
+                .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + dto.getRestaurantId() + " not found"));
+
+        boolean locationExists = restaurant.getLocations().stream()
+                .anyMatch(location -> location.getId().equals(dto.getLocationId()));
+
+        if (!locationExists) {
+            throw new RestaurantNotFoundException("Location with id " + dto.getLocationId() + " not found in restaurant " + dto.getRestaurantId());
+        }
+
         Reservation reservation = reservationMapper.toReservation(dto);
         reservation.setUserId(userId); // viene del JWT
+        reservation.setRestaurantId(dto.getRestaurantId());
         reservation.setLocationId(dto.getLocationId());
         reservation.setCreatedAt(LocalDateTime.now());
         reservation.setUpdatedAt(LocalDateTime.now());
@@ -39,10 +55,21 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public Reservation update(String id, ReservationRequestDto dto) {
+        Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
+                .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + dto.getRestaurantId() + " not found"));
+
+        boolean locationExists = restaurant.getLocations().stream()
+                .anyMatch(location -> location.getId().equals(dto.getLocationId()));
+
+        if (!locationExists) {
+            throw new RestaurantNotFoundException("Location with id " + dto.getLocationId() + " not found in restaurant " + dto.getRestaurantId());
+        }
+
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ReservationNotFoundException("Reservation with id " + id + " not found"));
 
-        reservation.setLocationId(dto.getLocationId()); 
+        reservation.setRestaurantId(dto.getRestaurantId());
+        reservation.setLocationId(dto.getLocationId());
         reservation.setDate(dto.getDate());
         reservation.setTime(dto.getTime());
         reservation.setNumberOfGuests(dto.getNumberOfGuests());
@@ -69,7 +96,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<Reservation> findByRestaurantId(String restaurantId) {
-        return reservationRepository.findByLocationId(restaurantId);
+        return reservationRepository.findByRestaurantId(restaurantId);
     }
 
     @Override

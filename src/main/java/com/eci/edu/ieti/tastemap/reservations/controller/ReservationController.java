@@ -34,7 +34,7 @@ public class ReservationController {
     /**
      * Create a new reservation.
      *
-     * @param reservationRequestDto the reservation data
+     * @param dto the reservation data
      * @return the created reservation
      */
     @PostMapping
