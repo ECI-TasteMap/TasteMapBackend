@@ -1,18 +1,23 @@
 package com.eci.edu.ieti.tastemap.reservations.service.serviceImpl;
 
 import com.eci.edu.ieti.tastemap.reservations.dto.ReservationRequestDto;
+import com.eci.edu.ieti.tastemap.reservations.exception.InvalidReservationException;
 import com.eci.edu.ieti.tastemap.reservations.exception.ReservationNotFoundException;
 import com.eci.edu.ieti.tastemap.reservations.mapper.ReservationMapper;
 import com.eci.edu.ieti.tastemap.reservations.model.Reservation;
 import com.eci.edu.ieti.tastemap.reservations.repository.ReservationRepository;
 import com.eci.edu.ieti.tastemap.reservations.service.ReservationService;
 import com.eci.edu.ieti.tastemap.restaurant.exception.RestaurantNotFoundException;
+import com.eci.edu.ieti.tastemap.restaurant.model.Location;
 import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
+import com.eci.edu.ieti.tastemap.restaurant.model.Schedule;
 import com.eci.edu.ieti.tastemap.restaurant.repository.RestaurantRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +39,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public Reservation create(ReservationRequestDto dto, String userId) {
+        validateReservationDateTime(dto);
         Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
                 .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + dto.getRestaurantId() + " not found"));
 
@@ -55,6 +61,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public Reservation update(String id, ReservationRequestDto dto) {
+        validateReservationDateTime(dto);
         Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
                 .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + dto.getRestaurantId() + " not found"));
 
@@ -120,5 +127,37 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<Reservation> findByLocationId(String locationId) {
         return reservationRepository.findByLocationId(locationId);
+    }
+
+    private void validateReservationDateTime(ReservationRequestDto dto) {
+        LocalDateTime requestedDateTime = LocalDateTime.of(dto.getDate(), dto.getTime());
+        if (requestedDateTime.isBefore(LocalDateTime.now())) {
+            throw new InvalidReservationException("Reservation date and time must be in the future.");
+        }
+
+        Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
+                .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + dto.getRestaurantId() + " not found"));
+
+        Location location = restaurant.getLocations().stream()
+                .filter(loc -> loc.getId().equals(dto.getLocationId()))
+                .findFirst()
+                .orElseThrow(() -> new RestaurantNotFoundException("Location with id " + dto.getLocationId() + " not found in restaurant " + dto.getRestaurantId()));
+
+        DayOfWeek dayOfWeek = dto.getDate().getDayOfWeek();
+        Schedule schedule = location.getSchedules().stream()
+                .filter(s -> s.getDays().contains(dayOfWeek))
+                .findFirst()
+                .orElseThrow(() -> new InvalidReservationException("Restaurant is not open on " + dayOfWeek));
+
+        if (schedule.isClosed()) {
+            throw new InvalidReservationException("Restaurant is closed on " + dayOfWeek);
+        }
+
+        LocalTime openTime = LocalTime.parse(schedule.getOpenTime());
+        LocalTime closeTime = LocalTime.parse(schedule.getCloseTime());
+
+        if (dto.getTime().isBefore(openTime) || dto.getTime().isAfter(closeTime)) {
+            throw new InvalidReservationException("Reservation time is outside of the restaurant's operating hours.");
+        }
     }
 }
