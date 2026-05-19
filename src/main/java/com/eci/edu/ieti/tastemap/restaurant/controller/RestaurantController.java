@@ -33,6 +33,7 @@ public class RestaurantController {
     }
     
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    /** Crea un nuevo restaurante (datos + opcional logo y menú). */
     public ResponseEntity<RestaurantResponseDto> create(
             @RequestPart("restaurant") RestaurantRequestDto restaurantRequestDto,
             @RequestPart(value = "logo", required = false) org.springframework.web.multipart.MultipartFile logoFile,
@@ -44,6 +45,7 @@ public class RestaurantController {
     }
 
     @GetMapping("/{id}")
+    /** Devuelve un restaurante por su id. */
     public ResponseEntity<RestaurantResponseDto> findById(@PathVariable String id) {
         Restaurant restaurant = restaurantService.findById(id).orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id " + id + " not found"));
         RestaurantResponseDto restaurantResponseDto = enrichRestaurantResponseDto(restaurantMapper.toRestaurantResponseDto(restaurant));
@@ -51,11 +53,13 @@ public class RestaurantController {
     }
 
     @GetMapping("/{id}/open-status")
+    /** Devuelve el estado de apertura actual del restaurante. */
     public ResponseEntity<RestaurantOpenStatusResponseDto> openStatus(@PathVariable String id) {
         return ResponseEntity.ok(restaurantService.getOpenStatusByRestaurantId(id));
     }
 
     @GetMapping
+    /** Lista todos los restaurantes (incluye estado de apertura). */
     public ResponseEntity<List<RestaurantResponseDto>> all() {
         List<Restaurant> restaurants = restaurantService.all();
         List<RestaurantResponseDto> restaurantResponseDtos = restaurants.stream()
@@ -66,6 +70,7 @@ public class RestaurantController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    /** Actualiza un restaurante (recibe datos y opcionalmente archivos multipart). */
     public ResponseEntity<RestaurantResponseDto> updateMultipart(
             @PathVariable String id,
             @RequestPart("restaurant") RestaurantRequestDto restaurantRequestDto,
@@ -77,11 +82,13 @@ public class RestaurantController {
     }
 
     private RestaurantResponseDto enrichRestaurantResponseDto(RestaurantResponseDto dto) {
+        /** Añade información calculada de `openStatus` al DTO. */
         dto.setOpenStatus(restaurantService.getOpenStatus(dto.getLocations()));
         return dto;
     }
 
     @DeleteMapping("/{id}")
+    /** Elimina un restaurante por su id. */
     public ResponseEntity<Void> deleteById(@PathVariable String id) {
         restaurantService.deleteById(id);
         return ResponseEntity.noContent().build();

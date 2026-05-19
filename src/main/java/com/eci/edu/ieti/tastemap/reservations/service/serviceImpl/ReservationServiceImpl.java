@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.eci.edu.ieti.tastemap.reservations.model.ReservationStatus;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -127,6 +128,33 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<Reservation> findByLocationId(String locationId) {
         return reservationRepository.findByLocationId(locationId);
+    }
+
+    @Override
+    public Reservation acceptReservation(String id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ReservationNotFoundException("Reservation with id " + id + " not found"));
+        reservation.setStatus(ReservationStatus.ACCEPTED);
+        reservation.setUpdatedAt(LocalDateTime.now());
+        return reservationRepository.save(reservation);
+    }
+
+    @Override
+    public Reservation denyReservation(String id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ReservationNotFoundException("Reservation with id " + id + " not found"));
+        reservation.setStatus(ReservationStatus.DENIED);
+        reservation.setUpdatedAt(LocalDateTime.now());
+        return reservationRepository.save(reservation);
+    }
+
+    @Override
+    public Reservation cancelReservation(String id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ReservationNotFoundException("Reservation with id " + id + " not found"));
+        reservation.setStatus(ReservationStatus.CANCELED);
+        reservation.setUpdatedAt(LocalDateTime.now());
+        return reservationRepository.save(reservation);
     }
 
     private void validateReservationDateTime(ReservationRequestDto dto) {

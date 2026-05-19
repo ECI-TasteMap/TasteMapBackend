@@ -84,5 +84,29 @@ public interface ReservationService {
      */
     void deleteById(String id);
 
+    /**
+     * Mark a reservation as accepted by the restaurant.
+     *
+     * @param id the reservation ID
+     * @return the updated reservation
+     */
+    Reservation acceptReservation(String id);
+
+    /**
+     * Mark a reservation as denied by the restaurant.
+     *
+     * @param id the reservation ID
+     * @return the updated reservation
+     */
+    Reservation denyReservation(String id);
+
+    /**
+     * Mark a reservation as canceled.
+     *
+     * @param id the reservation ID
+     * @return the updated reservation
+     */
+    Reservation cancelReservation(String id);
+
     List<Reservation> findByLocationId(String locationId);
 }
