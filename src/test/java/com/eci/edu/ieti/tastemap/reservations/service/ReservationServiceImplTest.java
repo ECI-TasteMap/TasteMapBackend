@@ -8,6 +8,7 @@ import com.eci.edu.ieti.tastemap.reservations.repository.ReservationRepository;
 import com.eci.edu.ieti.tastemap.reservations.service.serviceImpl.ReservationServiceImpl;
 import com.eci.edu.ieti.tastemap.restaurant.model.Location;
 import com.eci.edu.ieti.tastemap.restaurant.model.Restaurant;
+import com.eci.edu.ieti.tastemap.restaurant.model.Schedule;
 import com.eci.edu.ieti.tastemap.restaurant.repository.RestaurantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,12 +17,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -43,6 +47,7 @@ class ReservationServiceImplTest {
 
     private Reservation reservation;
     private ReservationRequestDto reservationRequestDto;
+    private Restaurant restaurant;
 
     @BeforeEach
     void setUp() {
@@ -58,16 +63,23 @@ class ReservationServiceImplTest {
         reservationRequestDto = new ReservationRequestDto(
             "restaurant1", "location1", date, time, 4, "Window seat preferred"
         );
+
+        restaurant = new Restaurant();
+        restaurant.setId("restaurant1");
+        Location location = new Location();
+        location.setId("location1");
+        Schedule schedule = new Schedule();
+        Set<DayOfWeek> days = new HashSet<>();
+        days.add(date.getDayOfWeek());
+        schedule.setDays(days);
+        schedule.setOpenTime("10:00");
+        schedule.setCloseTime("22:00");
+        location.setSchedules(Collections.singletonList(schedule));
+        restaurant.setLocations(Collections.singletonList(location));
     }
 
     @Test
     void testCreate() {
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId("restaurant1");
-        Location location = new Location();
-        location.setId("location1");
-        restaurant.setLocations(Collections.singletonList(location));
-
         when(restaurantRepository.findById("restaurant1")).thenReturn(Optional.of(restaurant));
         when(reservationMapper.toReservation(reservationRequestDto)).thenReturn(reservation);
         when(reservationRepository.save(any(Reservation.class))).thenReturn(reservation);
@@ -173,12 +185,6 @@ class ReservationServiceImplTest {
 
     @Test
     void testUpdate() {
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId("restaurant1");
-        Location location = new Location();
-        location.setId("location1");
-        restaurant.setLocations(Collections.singletonList(location));
-
         when(restaurantRepository.findById("restaurant1")).thenReturn(Optional.of(restaurant));
         when(reservationRepository.findById("1")).thenReturn(Optional.of(reservation));
         when(reservationRepository.save(reservation)).thenReturn(reservation);
@@ -193,11 +199,6 @@ class ReservationServiceImplTest {
 
     @Test
     void testUpdateReservationNotFound() {
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId("restaurant1");
-        Location location = new Location();
-        location.setId("location1");
-        restaurant.setLocations(Collections.singletonList(location));
 
         when(restaurantRepository.findById("restaurant1")).thenReturn(Optional.of(restaurant));
         when(reservationRepository.findById("1")).thenReturn(Optional.empty());
