@@ -14,4 +14,5 @@ import java.util.List;
 public class ChatRequestDto {
     private String message;
     private List<Object> conversationHistory;
+    private String token;
 }
