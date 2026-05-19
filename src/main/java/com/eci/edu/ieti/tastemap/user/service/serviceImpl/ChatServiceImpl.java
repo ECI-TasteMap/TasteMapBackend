@@ -29,6 +29,7 @@ public class ChatServiceImpl implements ChatService {
         payload.put("userId", userId);
         payload.put("message", request.getMessage());
         payload.put("conversationHistory", request.getConversationHistory());
+        payload.put("token", request.getToken());
 
         ChatResponseDto response = webClient.post()
                 .uri(webhookUrl)
