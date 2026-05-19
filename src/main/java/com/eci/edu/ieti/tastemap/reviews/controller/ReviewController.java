@@ -71,6 +71,21 @@ public class ReviewController {
         return ResponseEntity.ok(reviewResponseDtos);
     }
 
+    /**
+     * Finds all reviews for a specific location.
+     *
+     * @param locationId the ID of the location
+     * @return a list of reviews for the location
+     */
+    @GetMapping("/location/{locationId}")
+    public ResponseEntity<List<ReviewResponseDto>> findByLocationId(@PathVariable String locationId) {
+        List<Review> reviews = reviewService.findByLocationId(locationId);
+        List<ReviewResponseDto> reviewResponseDtos = reviews.stream()
+                .map(reviewMapper::toReviewResponseDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reviewResponseDtos);
+    }
+
     @GetMapping("/restaurant/{restaurantId}/average")
     public ResponseEntity<ReviewAverageResponseDto> averageByRestaurantId(@PathVariable String restaurantId) {
         double average = reviewService.averageByRestaurantId(restaurantId);
@@ -90,4 +105,3 @@ public class ReviewController {
         return ResponseEntity.noContent().build();
     }
 }
-
