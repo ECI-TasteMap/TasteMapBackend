@@ -47,6 +47,14 @@ public class ReservationController {
         return ResponseEntity.created(URI.create("/api/v1/reservations/" + reservation.getId())).body(response);
     }
 
+    @PostMapping("/internal")
+    public ResponseEntity<ReservationResponseDto> createInternal(@RequestBody ReservationRequestDto dto) {
+        String userId = dto.getUserId();
+        Reservation reservation = reservationService.create(dto, userId);
+        ReservationResponseDto response = reservationMapper.toReservationResponseDto(reservation);
+        return ResponseEntity.created(URI.create("/api/v1/reservations/" + reservation.getId())).body(response);
+    }
+
     /**
      * Get a reservation by ID.
      *
