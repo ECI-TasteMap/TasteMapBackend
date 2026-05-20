@@ -61,6 +61,10 @@ public class SecurityConfig {
                         // Public — API docs
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        // Public — internal integrations and chat
+                        .requestMatchers(HttpMethod.POST, "/api/v1/reservations/internal").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/*/chat").permitAll()
                         // Users
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users", "/api/v1/users/**").authenticated()
@@ -76,9 +80,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/reviews").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/reviews/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/reviews/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/reservations/internal").permitAll()
-                        // AI / Chat
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/*/chat").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/ai/history").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/ai/history").authenticated()
                         .anyRequest().authenticated())
