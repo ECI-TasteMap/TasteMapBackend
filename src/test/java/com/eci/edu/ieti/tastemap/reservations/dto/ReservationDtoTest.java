@@ -9,6 +9,8 @@ import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.eci.edu.ieti.tastemap.reservations.dto.ReservationResponseDto;
+
 class ReservationDtoTest {
 
     private LocalDate date;
@@ -35,6 +37,7 @@ class ReservationDtoTest {
         assertEquals(time, requestDto.getTime());
         assertEquals(4, requestDto.getNumberOfGuests());
         assertEquals("Window seat preferred", requestDto.getSpecialRequests());
+        assertNull(requestDto.getUserId());
     }
 
     @Test
@@ -46,11 +49,13 @@ class ReservationDtoTest {
         requestDto.setTime(time);
         requestDto.setNumberOfGuests(2);
         requestDto.setSpecialRequests("No spicy");
+        requestDto.setUserId("user2");
 
         assertEquals("restaurant2", requestDto.getRestaurantId());
         assertEquals("location2", requestDto.getLocationId());
         assertEquals(2, requestDto.getNumberOfGuests());
         assertEquals("No spicy", requestDto.getSpecialRequests());
+        assertEquals("user2", requestDto.getUserId());
     }
 
     @Test
@@ -105,6 +110,7 @@ class ReservationDtoTest {
         assertNull(requestDto.getSpecialRequests());
         assertEquals("location1", requestDto.getLocationId());
         assertEquals(2, requestDto.getNumberOfGuests());
+        assertNull(requestDto.getUserId());
     }
 
     @Test

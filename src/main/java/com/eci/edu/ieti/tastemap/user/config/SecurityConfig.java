@@ -76,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/reviews").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/reviews/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/reviews/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/reservations/internal").permitAll()
                         // AI / Chat
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/chat").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/ai/history").authenticated()

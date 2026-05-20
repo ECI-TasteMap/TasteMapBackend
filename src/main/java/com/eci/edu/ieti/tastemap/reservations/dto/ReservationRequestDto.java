@@ -20,4 +20,15 @@ public class ReservationRequestDto {
     private LocalTime time;
     private Integer numberOfGuests;
     private String specialRequests;
+    private String userId;
+
+    public ReservationRequestDto(String restaurantId, String locationId, LocalDate date, LocalTime time,
+                                 Integer numberOfGuests, String specialRequests) {
+        this.restaurantId = restaurantId;
+        this.locationId = locationId;
+        this.date = date;
+        this.time = time;
+        this.numberOfGuests = numberOfGuests;
+        this.specialRequests = specialRequests;
+    }
 }

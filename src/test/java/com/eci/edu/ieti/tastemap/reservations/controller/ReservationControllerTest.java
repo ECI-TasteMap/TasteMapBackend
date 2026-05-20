@@ -58,6 +58,7 @@ class ReservationControllerTest {
         reservationRequestDto = new ReservationRequestDto(
             "restaurant1", "location1", date, time, 4, "Window seat preferred"
         );
+        reservationRequestDto.setUserId("user1");
 
         reservationResponseDto = new ReservationResponseDto(
             "1", "user1", "restaurant1", "location1",
@@ -76,6 +77,18 @@ class ReservationControllerTest {
         when(reservationMapper.toReservationResponseDto(reservation)).thenReturn(reservationResponseDto);
 
         ResponseEntity<ReservationResponseDto> response = reservationController.create(reservationRequestDto, auth);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(reservationResponseDto, response.getBody());
+        verify(reservationService, times(1)).create(reservationRequestDto, "user1");
+    }
+
+    @Test
+    void testCreateInternal() {
+        when(reservationService.create(reservationRequestDto, "user1")).thenReturn(reservation);
+        when(reservationMapper.toReservationResponseDto(reservation)).thenReturn(reservationResponseDto);
+
+        ResponseEntity<ReservationResponseDto> response = reservationController.createInternal(reservationRequestDto);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(reservationResponseDto, response.getBody());
