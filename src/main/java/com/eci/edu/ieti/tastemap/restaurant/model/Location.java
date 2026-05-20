@@ -3,6 +3,7 @@ package com.eci.edu.ieti.tastemap.restaurant.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Location {
+    @Field("_id")
     private String id;
     private String address;
     private String phone;
