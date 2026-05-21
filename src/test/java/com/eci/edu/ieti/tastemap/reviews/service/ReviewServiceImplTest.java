@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,7 +67,7 @@ class ReviewServiceImplTest {
         when(reviewMapper.toReview(reviewRequestDto)).thenReturn(reviewBeforeSave);
         when(reviewRepository.save(reviewBeforeSave)).thenReturn(review);
         when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
-        when(reviewRepository.findByRestaurantId(restaurantId)).thenReturn(List.of(review));
+        lenient().when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
         when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
 
         Review createdReview = reviewService.create(reviewRequestDto);
@@ -165,9 +166,9 @@ class ReviewServiceImplTest {
         
         when(reviewRepository.findById("1")).thenReturn(Optional.of(review));
         doNothing().when(reviewRepository).deleteById("1");
-        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
-        when(reviewRepository.findByRestaurantId(restaurantId)).thenReturn(Collections.emptyList());
-        when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
+        lenient().when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        lenient().when(reviewRepository.findByRestaurantId(restaurantId)).thenReturn(Collections.emptyList());
+        lenient().when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
 
         reviewService.deleteById("1");
 
@@ -192,9 +193,9 @@ class ReviewServiceImplTest {
         
         when(reviewRepository.findById("1")).thenReturn(Optional.of(review));
         when(reviewRepository.save(review)).thenReturn(review);
-        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
-        when(reviewRepository.findByRestaurantId(restaurantId)).thenReturn(List.of(review));
-        when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
+        lenient().when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        lenient().when(reviewRepository.findByRestaurantId(restaurantId)).thenReturn(List.of(review));
+        lenient().when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
 
         Review updatedReview = reviewService.update("1", reviewRequestDto);
 
