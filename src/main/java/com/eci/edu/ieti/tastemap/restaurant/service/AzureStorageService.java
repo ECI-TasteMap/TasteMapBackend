@@ -49,7 +49,13 @@ public class AzureStorageService {
         BlobClient blobClient = containerClient.getBlobClient(blobName);
 
         try (InputStream inputStream = file.getInputStream()) {
+            // ↓ Agrega estas dos líneas
+            com.azure.storage.blob.models.BlobHttpHeaders headers = new com.azure.storage.blob.models.BlobHttpHeaders()
+                    .setContentType(file.getContentType())
+                    .setContentDisposition("inline");
+
             blobClient.upload(inputStream, file.getSize(), true);
+            blobClient.setHttpHeaders(headers); // ← y esta
             return blobClient.getBlobUrl();
         } catch (IOException e) {
             throw new IllegalStateException("Unable to upload file to Azure Blob Storage", e);
