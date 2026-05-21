@@ -51,7 +51,7 @@ class ReservationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        LocalDate date = LocalDate.of(2026, 5, 20);
+        LocalDate date = LocalDate.of(2026, 7, 20);
         LocalTime time = LocalTime.of(19, 30);
         LocalDateTime now = LocalDateTime.now();
 
@@ -160,7 +160,7 @@ class ReservationServiceImplTest {
 
     @Test
     void testFindByRestaurantIdAndDate() {
-        LocalDate date = LocalDate.of(2026, 5, 20);
+        LocalDate date = LocalDate.of(2026, 7, 20);
         when(reservationRepository.findByLocationIdAndDate("restaurant1", date))
             .thenReturn(Collections.singletonList(reservation));
 

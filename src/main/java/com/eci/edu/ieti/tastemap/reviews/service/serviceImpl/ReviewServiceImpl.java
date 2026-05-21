@@ -124,16 +124,21 @@ public class ReviewServiceImpl implements ReviewService {
             return;
         }
 
-        List<Review> reviews = reviewRepository.findByRestaurantId(restaurantId);
-        double average = reviews.isEmpty()
-                ? 0.0
-                : reviews.stream().mapToInt(Review::getStars).average().orElse(0.0);
-
         if (restaurant.getLocations() != null) {
-            for (Location location : restaurant.getLocations()) {
-                location.setAverageRating(average);
-            }
+        for (Location location : restaurant.getLocations()) {
+            List<Review> locationReviews = reviewRepository.findByLocationId(location.getId());
+
+            double average = locationReviews.isEmpty()
+                    ? 0.0
+                    : locationReviews.stream()
+                            .mapToInt(Review::getStars)
+                            .average()
+                            .orElse(0.0);
+
+            location.setAverageRating(average);
         }
-        restaurantRepository.save(restaurant);
     }
+
+    restaurantRepository.save(restaurant);
+}
 }
