@@ -29,6 +29,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
+		<jacoco.coverage.minimum>0.70</jacoco.coverage.minimum>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -170,6 +171,7 @@
 					</execution>
 					<execution>
 						<id>check</id>
+						<phase>verify</phase>
 						<goals>
 							<goal>check</goal>
 						</goals>
@@ -181,7 +183,7 @@
 										<limit>
 											<counter>INSTRUCTION</counter>
 											<value>COVEREDRATIO</value>
-											<minimum>0.00</minimum>
+											<minimum>${jacoco.coverage.minimum}</minimum>
 										</limit>
 									</limits>
 								</rule>
